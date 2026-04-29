@@ -48,6 +48,6 @@ declare module "$app/types" {
 		};
 		Pathname(): "/" | `/edit/${string}` & {} | "/home" | "/new" | `/note/${string}` & {} | `/space/${string}` & {};
 		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
-		Asset(): "/favicon.svg" | "/kanji/air.png" | "/kanji/earth.png" | "/kanji/fire.png" | "/kanji/water.png" | "/noise.svg" | "/noise1.svg" | string & {};
+		Asset(): "/favicon.svg" | "/kanji/air.png" | "/kanji/cursor.svg" | "/kanji/earth.png" | "/kanji/fire.png" | "/kanji/hand.svg" | "/kanji/ibeam.svg" | "/kanji/water.png" | "/noise.svg" | "/noise1.svg" | string & {};
 	}
 }

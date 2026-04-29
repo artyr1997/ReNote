@@ -1,10 +1,25 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import type { Space } from '$lib/db';
-	import { db } from '$lib/db';
+	import { db, SPACES } from '$lib/db';
 
 	let { data } = $props();
 	let { spaces, noteCounts } = $derived(data);
+
+	let showExportConfirm = $state(false);
+	let exportNoteCount = $state(0);
+	let exportSpaceCounts: Record<string, number> = $state({});
+
+	async function openExportConfirm() {
+		exportNoteCount = await db.notes.count();
+		const spacesData = await db.spaces.toArray();
+		const counts: Record<string, number> = {};
+		for (const s of spacesData) {
+			counts[s.english] = await db.notes.where('spaceId').equals(s.id!).count();
+		}
+		exportSpaceCounts = counts;
+		showExportConfirm = true;
+	}
 
 	async function exportNotes() {
 		const notes = await db.notes.toArray();
@@ -32,6 +47,7 @@
 		a.download = `renote-backup-${new Date().toISOString().slice(0, 10)}.json`;
 		a.click();
 		URL.revokeObjectURL(url);
+		showExportConfirm = false;
 	}
 
 	let fileInput: HTMLInputElement;
@@ -96,7 +112,7 @@
 	];
 </script>
 
-<main class="home">
+<main class="home fade-in">
 	<!-- Background -->
 	<div class="background" aria-hidden="true"></div>
 
@@ -108,7 +124,29 @@
 	<button class="imp" onclick={() => fileInput.click()}>IMP</button>
 
 	<!-- EXP -->
-	<button class="exp" onclick={exportNotes}>EXP</button>
+	<button class="exp" onclick={openExportConfirm}>EXP</button>
+
+	{#if showExportConfirm}
+		<div class="exp-overlay" onclick={() => showExportConfirm = false} aria-hidden="true"></div>
+		<div class="exp-box">
+			<p class="exp-heading">EXPORT</p>
+			<div class="exp-divider"></div>
+			<div class="exp-stats">
+				<p class="exp-total">{exportNoteCount} {exportNoteCount === 1 ? 'note' : 'notes'}</p>
+				<div class="exp-spaces">
+					{#each SPACES as s}
+						<div class="exp-space-row">
+							<span class="exp-dot" style="color: {s.color}">◆</span>
+							<span class="exp-space-name">{s.english.toUpperCase()}</span>
+							<span class="exp-space-count">{exportSpaceCounts[s.english] ?? 0}</span>
+						</div>
+					{/each}
+				</div>
+			</div>
+			<div class="exp-divider"></div>
+			<button class="exp-confirm-btn" onclick={exportNotes}>EXPORT</button>
+		</div>
+	{/if}
 
 	<!-- NEW -->
 	<a href="/new" class="edit">
@@ -124,7 +162,7 @@
 		</div>
 		<!-- Top box -->
 		<div class="top-box" style="left: {pos.topBox.left}; top: {pos.topBox.top}; width: {pos.topBox.width}; height: {pos.topBox.height};">
-			<div class="diamond" style="background-color: {pos.diamond.color};"></div>
+			<div class="diamond" style="background-color: {space.color};"></div>
 		</div>
 		<!-- Image -->
 		<img
@@ -179,6 +217,13 @@
 		color: #474747;
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 20px;
+		transition: background 200ms ease, color 200ms ease;
+	}
+
+	.edit:hover,
+	.info:hover {
+		background: #413f3f;
+		color: #f5f0e8;
 	}
 
 	.edit {
@@ -193,6 +238,7 @@
 		text-orientation: upright;
 		letter-spacing: 0.64em;
 		line-height: 32px;
+		padding-top: 0.64em;
 	}
 
 	.bottom-box,
@@ -270,5 +316,107 @@
 	.exp {
 		right: calc(6.25% - 7px);
 		bottom: calc(6.25% + 1px);
+	}
+
+	.exp-overlay {
+		position: fixed;
+		inset: 0;
+		z-index: 60;
+	}
+
+	.exp-box {
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		background: var(--bg, #f5f0e8);
+		border: 2px solid #413f3f;
+		padding: 2.5rem 3rem;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1.5rem;
+		z-index: 70;
+		min-width: 280px;
+	}
+
+	.exp-heading {
+		font-family: 'Noto Sans JP', sans-serif;
+		font-size: 18px;
+		letter-spacing: 0.4em;
+		color: #474747;
+		margin: 0;
+	}
+
+	.exp-divider {
+		width: 100%;
+		height: 1px;
+		background: #413f3f;
+		opacity: 0.3;
+	}
+
+	.exp-stats {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+		width: 100%;
+	}
+
+	.exp-total {
+		font-family: 'Kurale', serif;
+		font-size: 32px;
+		color: #474747;
+		margin: 0;
+		letter-spacing: 0.05em;
+	}
+
+	.exp-spaces {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		width: 100%;
+	}
+
+	.exp-space-row {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.exp-dot {
+		font-size: 0.75rem;
+	}
+
+	.exp-space-name {
+		font-family: 'Noto Sans JP', sans-serif;
+		font-size: 13px;
+		letter-spacing: 0.2em;
+		color: #474747;
+		flex: 1;
+	}
+
+	.exp-space-count {
+		font-family: 'Kurale', serif;
+		font-size: 18px;
+		color: #474747;
+		opacity: 0.6;
+	}
+
+	.exp-confirm-btn {
+		background: transparent;
+		border: 2px solid #413f3f;
+		font-family: 'Noto Sans JP', sans-serif;
+		font-size: 16px;
+		color: #474747;
+		letter-spacing: 0.3em;
+		padding: 0.5rem 2rem;
+		cursor: pointer;
+		transition: background 200ms ease, color 200ms ease;
+	}
+
+	.exp-confirm-btn:hover {
+		background: #413f3f;
+		color: #f5f0e8;
 	}
 </style>

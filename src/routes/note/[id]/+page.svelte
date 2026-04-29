@@ -1,22 +1,30 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { db } from '$lib/db';
+	import type { Space } from '$lib/db';
 
 	let { data } = $props();
-	let { note, space } = $derived(data);
+	let { note, space, spaces } = $derived(data);
 
 	let body = $state(note?.body ?? '');
 	let showSaved = $state(false);
+	let selectedIdx = $state(spaces.findIndex((s: Space) => s.id === note?.spaceId) ?? 0);
+
+	let selectedSpace: Space = $derived(spaces[selectedIdx] ?? spaces[0]);
+
+	function prev() { selectedIdx = (selectedIdx - 1 + spaces.length) % spaces.length; }
+	function next() { selectedIdx = (selectedIdx + 1) % spaces.length; }
 
 	async function save() {
 		if (!note?.id) return;
 		await db.notes.update(note.id, {
 			title: body.split('\n')[0].trim().slice(0, 60) || 'Untitled',
 			body: body.trim(),
+			spaceId: selectedSpace.id!,
 			updatedAt: Date.now(),
 		});
 		showSaved = true;
-		setTimeout(() => goto(`/space/${space?.element}`), 1000);
+		setTimeout(() => goto(`/space/${selectedSpace.element}`), 1000);
 	}
 </script>
 
@@ -37,7 +45,7 @@
 	<p>SAVE</p>
 </button>
 
-<main class="note-screen">
+<main class="note-screen fade-in">
 	<div class="content-block">
 		<div class="block-corner tl"></div>
 		<div class="block-corner tr"></div>
@@ -50,12 +58,14 @@
 			placeholder="Begin writing…"
 		></textarea>
 
-		{#if space}
-			<div class="space-tag">
-				<span class="el-diamond" style="color: {space.color}">◆</span>
-				<span class="el-name">{space.kanji} {space.english.toUpperCase()}</span>
+		<div class="element-selector">
+			<button class="el-nav-btn" onclick={prev}>←</button>
+			<div class="el-center">
+				<span class="el-diamond" style="color: {selectedSpace.color}">◆</span>
+				<span class="el-name">{selectedSpace.kanji} {selectedSpace.english.toUpperCase()}</span>
 			</div>
-		{/if}
+			<button class="el-nav-btn" onclick={next}>→</button>
+		</div>
 	</div>
 </main>
 
@@ -101,6 +111,12 @@
 		cursor: pointer;
 		text-decoration: none;
 		z-index: 10;
+		transition: background 200ms ease, color 200ms ease;
+	}
+
+	.nav-btn:hover {
+		background: #413f3f;
+		color: #f5f0e8;
 	}
 
 	.nav-btn p {
@@ -109,6 +125,7 @@
 		text-orientation: upright;
 		letter-spacing: 0.64em;
 		line-height: 32px;
+		padding-top: 0.64em;
 	}
 
 	.nav-back {
@@ -165,8 +182,13 @@
 	.block-corner.br { bottom: 0; right: 0; transform: rotate(180deg); }
 
 	.note-body {
-		width: 100%;
-		height: 100%;
+		position: absolute;
+		top: 40px;
+		left: 40px;
+		right: 40px;
+		bottom: 80px;
+		width: calc(100% - 48px);
+		height: calc(100% - 104px);
 		background: transparent;
 		border: none;
 		resize: none;
@@ -175,8 +197,8 @@
 		font-size: 18px;
 		line-height: 1.85;
 		color: #413f3f;
-		padding: 2rem 3rem 4rem;
-		box-sizing: border-box;
+		padding: 0;
+		overflow-y: auto;
 	}
 
 	.note-body::placeholder {
@@ -185,16 +207,33 @@
 		font-style: italic;
 	}
 
-	/* Space tag bottom-center */
-	.space-tag {
+	.element-selector {
 		position: absolute;
 		bottom: 24px;
 		left: 50%;
 		transform: translateX(-50%);
 		display: flex;
+		align-items: center;
+		gap: 2rem;
+	}
+
+	.el-nav-btn {
+		background: transparent;
+		border: none;
+		cursor: pointer;
+		font-family: 'Noto Sans JP', sans-serif;
+		font-size: 2rem;
+		color: #474747;
+		padding: 0.5rem;
+		line-height: 1;
+	}
+
+	.el-center {
+		display: flex;
 		flex-direction: column;
 		align-items: center;
 		gap: 0.2rem;
+		min-width: 60px;
 	}
 
 	.el-diamond {
@@ -215,7 +254,7 @@
 		left: 50%;
 		transform: translateX(-50%);
 		width: 42px;
-		height: 164px;
+		height: 200px;
 		border: 2px solid #413f3f;
 		border-top: none;
 		padding-top: 1.5rem;
@@ -223,9 +262,8 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: var(--bg, #f5f0e8);
 		z-index: 50;
-		animation: toastIn 150ms ease-out both;
+		animation: toastIn 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
 	}
 
 	.saved-toast span {
@@ -239,7 +277,7 @@
 	}
 
 	@keyframes toastIn {
-		from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+		from { opacity: 0; transform: translateX(-50%) translateY(-100%); }
 		to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 	}
 </style>

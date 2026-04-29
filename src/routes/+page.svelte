@@ -18,6 +18,9 @@
 
 <div class="landing-page">
 	<div class="hero">
+		<button class="start-button" onclick={start}>
+			<span>OPEN</span>
+		</button>
 		<div class="hero-block">
 			<div class="block-corner tr"></div>
 			<div class="block-corner bl"></div>
@@ -35,10 +38,16 @@
 			<p class="section-heading">PHILOSOPHY</p>
 			<div class="section-copy">
 				<p>
-					Thinking has become a public act. Every idea you form, every moment of reflection — captured, catalogued, and quietly sold. Your attention is a currency. Your habits are data. We were promised tools that would extend the mind. What we got were traps dressed as convenience — platforms that fragment thought, reward distraction, and profit from who you're performing to be.
+					We live in a time of endless features. Apps promise everything but slowly take your time with them.
 				</p>
 				<p>
-					This is different. No feeds, no friction, no agenda. Just the four oldest forces in the world and a place to think the way humans always have. Slowly. Privately. Honestly. Your mind was never meant to be a product. It still isn't.
+					Notes became systems but systems became noise. What was meant to be simple turned into something you have to learn.
+				</p>
+				<p>
+					ReNote is different. Just you and your thoughts. Your notes stay where they belong: in your browser, under your control.
+				</p>
+				<p>
+					This is your space again.
 				</p>
 			</div>
 		</section>
@@ -52,7 +61,7 @@
 				<div class="block-corner br"></div>
 				<div class="no-copy">
 					Ads · Notifications · Paywalls · Tracking<br>
-					Algorithms · Manipulation · Accounts · Profiles
+					Algorithms · Manipulation · Accounts · AI
 				</div>
 			</div>
 		</section>
@@ -90,18 +99,20 @@
 			<p class="section-heading">IMPORT / EXPORT</p>
 			<div class="section-copy">
 				<p>
-					Your notes live entirely on your device — no servers, no accounts, no cloud. That means you are the only one responsible for keeping them safe. ReNote gives you two tools to do that: export your notes as a plain JSON file you can store anywhere, and import them back whenever you need.
+					Your notes live entirely on your device. That means you are the only one responsible for keeping them safe. ReNote gives you two tools to do that: export your notes as a plain JSON file you can store anywhere, and import them back whenever you need.
 				</p>
 				<p>
-					Use export before switching devices, clearing your browser, or simply as a personal archive. Use import to restore a backup or move your notes to a new machine. The format is open and human-readable — your data is yours, always.
+					Use export before switching devices, clearing your browser, or simply as a personal archive. Use import to restore a backup or move your notes to a new machine.
+				</p>
+				<p>
+					Your data is yours, always.
 				</p>
 			</div>
 		</section>
+
+		<p class="copyright">© 2025 Re:Note</p>
 	</main>
 
-	<button class="start-button" onclick={start}>
-		<span>OPEN</span>
-	</button>
 </div>
 
 <style>
@@ -127,6 +138,55 @@
 		position: relative;
 		width: 516px;
 		height: 516px;
+	}
+
+	.hero-block .block-corner.tr {
+		animation: cornerTR 2s ease-out both;
+	}
+
+	.hero-block .block-corner.bl {
+		animation: cornerBL 2s ease-out both;
+	}
+
+	@keyframes cornerTR {
+		0% {
+			top: calc(50% - 9px);
+			right: calc(50% - 9px);
+			transform: rotate(270deg);
+		}
+		40% {
+			top: calc(50% - 9px);
+			right: calc(50% - 9px);
+			transform: rotate(90deg);
+		}
+		100% {
+			top: 0;
+			right: 0;
+			transform: rotate(90deg);
+		}
+	}
+
+	@keyframes cornerBL {
+		0% {
+			bottom: calc(50% - 9px);
+			left: calc(50% - 9px);
+			transform: rotate(90deg);
+		}
+		40% {
+			bottom: calc(50% - 9px);
+			left: calc(50% - 9px);
+			transform: rotate(-90deg);
+		}
+		100% {
+			bottom: 0;
+			left: 0;
+			transform: rotate(-90deg);
+		}
+	}
+
+	@keyframes heroContentFade {
+		from { opacity: 0; }
+		to   { opacity: 1; }
 	}
 
 	.block-corner {
@@ -167,6 +227,7 @@
 		font-family: 'Kurale', serif;
 		font-size: 1rem;
 		letter-spacing: 0.02em;
+		animation: heroContentFade 0.5s ease-out 1.6s both;
 	}
 
 	.hero-title {
@@ -179,6 +240,7 @@
 		line-height: 0.92;
 		letter-spacing: 0.02em;
 		margin: 0;
+		animation: heroContentFade 0.5s ease-out 1.6s both;
 	}
 
 	.hero-title span {
@@ -187,9 +249,10 @@
 
 	.hero-tagline {
 		position: absolute;
-		bottom: 1.5rem;
-		right: 1.5rem;
+		bottom: 0.1rem;
+		right: 0.1rem;
 		margin: 0;
+		animation: heroContentFade 0.5s ease-out 1.6s both;
 		font-family: 'Kurale', serif;
 		font-size: 1rem;
 		letter-spacing: 0.12em;
@@ -223,6 +286,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1.6rem;
+		text-align: center;
 	}
 
 	.section-copy p {
@@ -231,6 +295,16 @@
 		line-height: 1.95;
 		color: var(--text);
 		margin: 0;
+	}
+
+	.copyright {
+		font-family: 'Kurale', serif;
+		font-size: 13px;
+		color: #474747;
+		opacity: 0.9;
+		letter-spacing: 0.15em;
+		text-align: center;
+		margin: 6rem auto 4rem;
 	}
 
 	.no-section .no-box {
@@ -248,12 +322,15 @@
 	}
 
 	.tags-block {
-		flex: 1;
 		position: relative;
 		padding: 0.75rem 1rem;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
+		align-items: center;
+		text-align: center;
+		margin-top: auto;
+		margin-bottom: auto;
 	}
 
 	.space-section {
@@ -364,7 +441,7 @@
 		font-family: 'Kurale', serif;
 		font-size: clamp(1rem, 1.2vw, 1.3rem);
 		line-height: 1.95;
-		margin: 0 0 10rem; // AAAARRRRTTTT
+		margin: 0;
 		text-align: left;
 	}
 
@@ -382,6 +459,7 @@
 		right: calc(6.25% - 7px);
 		top: 50%;
 		transform: translateY(-50%);
+		animation: heroContentFade 0.5s ease-out 1.6s both;
 		width: 42px;
 		height: 164px;
 		border: 2px solid #413f3f;
@@ -395,6 +473,12 @@
 		cursor: pointer;
 		z-index: 10;
 		padding: 0;
+		transition: background 200ms ease, color 200ms ease;
+	}
+
+	.start-button:hover {
+		background: #413f3f;
+		color: #f5f0e8;
 	}
 
 	.start-button span {
@@ -403,6 +487,7 @@
 		text-orientation: upright;
 		letter-spacing: 0.64em;
 		line-height: 32px;
+		padding-top: 0.64em;
 	}
 
 	@media (max-width: 980px) {
