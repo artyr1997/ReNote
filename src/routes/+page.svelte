@@ -110,7 +110,7 @@
 			</div>
 		</section>
 
-		<p class="copyright">© 2025 Re:Note</p>
+		<p class="copyright">© 2026 Re:Note</p>
 	</main>
 
 </div>
@@ -526,22 +526,97 @@
 	}
 
 	@media (max-width: 640px) {
-		.landing-page {
-			padding: 1.5rem 1rem 2.5rem;
-		}
+		.landing-page { padding: 1.5rem 1rem 2.5rem; }
 
 		.start-button {
-			right: 0.5rem;
-			font-size: 0.85rem;
+			position: static;
+			transform: none;
+			width: 120px;
+			height: 36px;
+			font-size: 16px;
+			margin: -6rem auto 0;
+		}
+
+		.start-button span {
+			writing-mode: horizontal-tb;
+			text-orientation: mixed;
+			letter-spacing: 0.3em;
+			padding-top: 0;
+		}
+
+		.hero { margin-bottom: 4rem; }
+
+		.hero-block {
+			width: 85vw;
+			height: 85vw;
 		}
 
 		.hero-title {
-			font-size: clamp(3.5rem, 18vw, 5.5rem);
+			font-size: clamp(2rem, 13vw, 3rem);
 		}
 
-		.section-copy p,
-		.space-copy {
-			font-size: 1rem;
+		.content { gap: 4rem; }
+
+		.section-heading { margin-bottom: 2rem; }
+
+		.space-grid { gap: 4rem; }
+
+		.space-card,
+		.space-card.even {
+			display: flex;
+			flex-direction: column;
 		}
+
+		.space-card.even .space-visual,
+		.space-card.even .space-content {
+			order: unset;
+		}
+
+		.space-visual {
+			width: 100%;
+			height: 88px;
+			display: flex;
+			flex-direction: row;
+			align-items: stretch;
+		}
+
+		.space-top-box {
+			position: static;
+			width: 56px;
+			height: 88px;
+			border: 2px solid #413f3f;
+			border-right: none;
+			flex-shrink: 0;
+		}
+
+		.space-kanji-img {
+			position: static;
+			width: 88px;
+			height: 88px;
+			transform: none;
+			object-fit: contain;
+			opacity: 0.8;
+			flex-shrink: 0;
+		}
+
+		.space-bottom-box {
+			position: static;
+			flex: 1;
+			height: 88px;
+			border: 2px solid #413f3f;
+			border-left: none;
+		}
+
+		.space-label {
+			font-size: 14px;
+			letter-spacing: 0.3em;
+		}
+
+		.tags-block { margin-top: 1.5rem; }
+
+		.space-tags { font-size: 0.75rem; }
+
+		.section-copy p,
+		.space-copy { font-size: 1rem; }
 	}
 </style>

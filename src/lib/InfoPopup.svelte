@@ -157,4 +157,11 @@
 		letter-spacing: 0.1em;
 		margin: 0;
 	}
+
+	@media (max-width: 640px) {
+		.info-btn{
+			font-size: 16px;
+		}
+	}
+
 </style>

@@ -280,4 +280,30 @@
 		from { opacity: 0; transform: translateX(-50%) translateY(-100%); }
 		to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 	}
+
+	@media (max-width: 640px) {
+		.note-screen { overflow: visible; }
+
+		.nav-home { font-size: 16px; }
+
+		.nav-btn {
+			width: 36px;
+			height: 120px;
+			font-size: 16px;
+		}
+
+		.saved-toast {
+			width: auto;
+			min-width: 140px;
+			height: 42px;
+			border: 2px solid #413f3f;
+			border-bottom: none;
+			padding: 0 1.5rem;
+		}
+
+		.saved-toast span {
+			writing-mode: horizontal-tb;
+			letter-spacing: 0.3em;
+		}
+	}
 </style>
