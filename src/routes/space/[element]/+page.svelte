@@ -111,17 +111,17 @@
 	<div class="center-divider" aria-hidden="true"></div>
 
 	{#if space}
-		<div class="left-column">
-			<div class="kanji-block">
-				<img
-					class="space-kanji-img"
-					src="/kanji/{space.element}.png"
-					alt={space.kanji}
-				/>
-				<div class="kanji-divider"></div>
-				<p class="kanji-name">{space.english.toUpperCase()}</p>
-			</div>
+		<div class="kanji-block">
+			<img
+				class="space-kanji-img"
+				src="/kanji/{space.element}.png"
+				alt={space.kanji}
+			/>
+			<div class="kanji-divider"></div>
+			<p class="kanji-name"><span class="kanji-char">{space.kanji}</span><span class="kanji-slash"> / </span>{space.english.toUpperCase()}</p>
+		</div>
 
+		<div class="left-column">
 			<div class="search-row">
 				<input
 					class="search-input"
@@ -300,6 +300,7 @@
 
 	.left-column {
 		left: calc(28.125% - 181.5px);
+		padding-top: calc(320px + 4rem);
 	}
 
 	.right-column {
@@ -307,11 +308,13 @@
 	}
 
 	.kanji-block {
-		position: relative;
-		width: 100%;
+		position: absolute;
+		left: calc(28.125% - 181.5px);
+		top: 82px;
+		width: 398px;
 		max-width: 440px;
 		height: 320px;
-		margin: 0 auto 4rem;
+		margin: 0;
 	}
 
 	.space-kanji-img {
@@ -344,6 +347,8 @@
 		right: 64px;
 		bottom: 64px;
 	}
+
+	.kanji-char, .kanji-slash { display: none; }
 
 	.search-row {
 		width: 100%;
@@ -591,32 +596,71 @@
 		opacity: 0.3;
 	}
 
-	@media (max-width: 980px) {
+	@media (max-width: 640px) {
+		.nav-home, .nav-corner { font-size: 16px; }
+
+		.nav-button {
+			width: 36px;
+			height: 120px;
+			font-size: 16px;
+		}
+
 		.space-screen {
-			grid-template-columns: 1fr;
+			display: flex;
+			flex-direction: column;
+			min-height: 100vh;
+			overflow: visible;
+			padding: 0 calc(6.25% + 50px) 2rem;
 		}
 
-		.nav-new,
-		.nav-del,
-		.nav-home {
+		.center-divider { display: none; }
+
+		.left-column, .right-column {
 			position: static;
-			transform: none;
+			width: 100%;
+			height: auto;
+			gap: 1rem;
+		}
+
+		.kanji-block {
+			position: static;
+			order: -1;
+			width: 100%;
+			height: auto;
+			margin-bottom: 0.5rem;
+			padding-top: calc(6.25% + 40px);
+			display: flex;
+			justify-content: center;
+		}
+
+		.right-column { order: 0; margin-top: 1rem; }
+		.left-column { order: 1; margin-top: 3rem; padding-top: 0; }
+		.space-kanji-img { display: none; }
+		.kanji-divider { display: none; }
+		.kanji-char, .kanji-slash { display: inline; }
+		.kanji-name {
+			position: static;
+			font-size: 22px;
+			letter-spacing: 0.1em;
+			text-align: center;
+			width: 100%;
+		}
+
+		.notes-list { max-height: 30vh; }
+
+		.right-column { padding-bottom: 1.5rem; }
+		.quote-card { height: 40vh; min-height: 260px; }
+
+		.saved-toast {
+			width: auto;
+			min-width: 140px;
+			height: 42px;
+			border: none;
+			padding: 0 1.5rem;
+		}
+		.saved-toast span {
 			writing-mode: horizontal-tb;
-			text-orientation: initial;
-		}
-
-		.center-divider {
-			display: none;
-		}
-
-		.left-column,
-		.right-column {
-			padding: 2rem 1.5rem;
-			max-width: 100%;
-		}
-
-		.quote-card {
-			max-width: 100%;
+			letter-spacing: 0.3em;
 		}
 	}
 </style>

@@ -153,18 +153,14 @@
 		<span>NEW</span>
 	</a>
 
-	<!-- Spaces -->
 	{#each spaces as space, i}
 		{@const pos = positions[i]}
-		<!-- Bottom box -->
 		<div class="bottom-box" style="left: {pos.bottomBox.left}; top: {pos.bottomBox.top}; width: {pos.bottomBox.width}; height: {pos.bottomBox.height};">
 			<p class="label">{pos.label.text}</p>
 		</div>
-		<!-- Top box -->
 		<div class="top-box" style="left: {pos.topBox.left}; top: {pos.topBox.top}; width: {pos.topBox.width}; height: {pos.topBox.height};">
 			<div class="diamond" style="background-color: {space.color};"></div>
 		</div>
-		<!-- Image -->
 		<img
 			class="kanji-image"
 			style="left: {pos.image.left}; top: {pos.image.top}; width: {pos.image.size}; height: {pos.image.size};"
@@ -418,5 +414,49 @@
 	.exp-confirm-btn:hover {
 		background: #413f3f;
 		color: #f5f0e8;
+	}
+
+	@media (max-width: 640px) {
+		.exit, .imp, .exp { font-size: 16px; }
+
+		.info {
+			width: 36px;
+			height: 120px;
+			font-size: 16px;
+		}
+
+		.edit {
+			width: 36px;
+			height: 120px;
+			font-size: 16px;
+		}
+
+		.home { display: block; }
+
+		/* Kanji – 2×2: ліва центр 32vw, права центр 68vw (±18vw від 50vw) */
+		.kanji-image:nth-of-type(1) { left: 16vw !important; top: 17vh !important; width: 32vw !important; height: 32vw !important; }
+		.kanji-image:nth-of-type(2) { left: 52vw !important; top: 17vh !important; width: 32vw !important; height: 32vw !important; }
+		.kanji-image:nth-of-type(3) { left: 16vw !important; top: 58vh !important; width: 32vw !important; height: 32vw !important; }
+		.kanji-image:nth-of-type(4) { left: 52vw !important; top: 58vh !important; width: 32vw !important; height: 32vw !important; }
+
+		/* Top-boxes */
+		.home > :nth-child(1 of .top-box) { left: 20vw !important; top: calc(17vh - 78px) !important; width: 24vw !important; height: 70px !important; }
+		.home > :nth-child(2 of .top-box) { left: 56vw !important; top: calc(17vh - 78px) !important; width: 24vw !important; height: 70px !important; }
+		.home > :nth-child(3 of .top-box) { left: 20vw !important; top: calc(58vh - 78px) !important; width: 24vw !important; height: 70px !important; }
+		.home > :nth-child(4 of .top-box) { left: 56vw !important; top: calc(58vh - 78px) !important; width: 24vw !important; height: 70px !important; }
+
+		/* Bottom-boxes */
+		.home > :nth-child(1 of .bottom-box) { left: 20vw !important; top: calc(17vh + 32vw + 8px) !important; width: 24vw !important; height: 130px !important; }
+		.home > :nth-child(2 of .bottom-box) { left: 56vw !important; top: calc(17vh + 32vw + 8px) !important; width: 24vw !important; height: 130px !important; }
+		.home > :nth-child(3 of .bottom-box) { left: 20vw !important; top: calc(58vh + 32vw + 8px) !important; width: 24vw !important; height: 130px !important; }
+		.home > :nth-child(4 of .bottom-box) { left: 56vw !important; top: calc(58vh + 32vw + 8px) !important; width: 24vw !important; height: 130px !important; }
+
+		.label {
+			writing-mode: vertical-rl;
+			text-orientation: upright;
+			font-size: 18px;
+			letter-spacing: 0.5em;
+			line-height: 28px;
+		}
 	}
 </style>
