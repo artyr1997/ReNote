@@ -21,6 +21,9 @@
 		<button class="start-button" onclick={start}>
 			<span>OPEN</span>
 		</button>
+		<a class="kofi-button" href="https://ko-fi.com/artursavytskyi" target="_blank" rel="noopener noreferrer">
+			<span>KOFI</span>
+		</a>
 		<div class="hero-block">
 			<div class="block-corner tr"></div>
 			<div class="block-corner bl"></div>
@@ -490,6 +493,43 @@
 		padding-top: 0.64em;
 	}
 
+	.kofi-button {
+		position: fixed;
+		left: calc(6.25% - 7px);
+		top: 50%;
+		transform: translateY(-50%);
+		animation: heroContentFade 0.5s ease-out 1.6s both;
+		width: 42px;
+		height: 164px;
+		border: 2px solid #413f3f;
+		background: transparent;
+		color: #474747;
+		font-family: 'Noto Sans JP', sans-serif;
+		font-size: 20px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		z-index: 10;
+		padding: 0;
+		text-decoration: none;
+		transition: background 200ms ease, color 200ms ease;
+	}
+
+	.kofi-button:hover {
+		background: #413f3f;
+		color: #f5f0e8;
+	}
+
+	.kofi-button span {
+		display: inline-block;
+		writing-mode: vertical-rl;
+		text-orientation: upright;
+		letter-spacing: 0.64em;
+		line-height: 32px;
+		padding-top: 0.64em;
+	}
+
 	@media (max-width: 980px) {
 		.hero {
 			min-height: auto;
@@ -534,7 +574,8 @@
 			width: 120px;
 			height: 36px;
 			font-size: 16px;
-			margin: -6rem auto 0;
+			margin: 5rem auto 0;
+			order: 2;
 		}
 
 		.start-button span {
@@ -544,11 +585,34 @@
 			padding-top: 0;
 		}
 
-		.hero { margin-bottom: 4rem; }
+		.kofi-button {
+			position: static;
+			transform: none;
+			width: 120px;
+			height: 36px;
+			font-size: 16px;
+			margin: 0 auto 5rem;
+			order: 0;
+		}
+
+		.kofi-button span {
+			writing-mode: horizontal-tb;
+			text-orientation: mixed;
+			letter-spacing: 0.3em;
+			padding-top: 0;
+		}
+
+		.hero {
+			margin-bottom: 4rem;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
 
 		.hero-block {
 			width: 85vw;
 			height: 85vw;
+			order: 1;
 		}
 
 		.hero-title {
