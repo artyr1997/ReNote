@@ -284,4 +284,19 @@
 		margin: 0;
 		margin-bottom: 3rem;
 	}
+
+	@media (max-width: 640px) {
+		.nav-home { font-size: 16px; }
+
+		.nav-edit,
+		.nav-info {
+			width: 36px !important;
+			height: 120px !important;
+			font-size: 16px !important;
+		}
+
+		.edit-screen {
+			padding: 60px calc(6.25% + 50px);
+		}
+	}
 </style>

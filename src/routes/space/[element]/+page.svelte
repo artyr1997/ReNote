@@ -53,6 +53,7 @@
 
 	async function saveNoteWithToast() {
 		await saveNote();
+		await invalidateAll();
 		if (savedTimeout) clearTimeout(savedTimeout);
 		showSaved = true;
 		savedTimeout = setTimeout(() => { showSaved = false; }, 1500);
@@ -110,17 +111,17 @@
 	<div class="center-divider" aria-hidden="true"></div>
 
 	{#if space}
-		<div class="left-column">
-			<div class="kanji-block">
-				<img
-					class="space-kanji-img"
-					src="/kanji/{space.element}.png"
-					alt={space.kanji}
-				/>
-				<div class="kanji-divider"></div>
-				<p class="kanji-name">{space.english.toUpperCase()}</p>
-			</div>
+		<div class="kanji-block">
+			<img
+				class="space-kanji-img"
+				src="/kanji/{space.element}.png"
+				alt={space.kanji}
+			/>
+			<div class="kanji-divider"></div>
+			<p class="kanji-name"><span class="kanji-char">{space.kanji}</span><span class="kanji-slash"> / </span>{space.english.toUpperCase()}</p>
+		</div>
 
+		<div class="left-column">
 			<div class="search-row">
 				<input
 					class="search-input"
@@ -214,6 +215,12 @@
 		background: transparent;
 		cursor: pointer;
 		z-index: 10;
+		transition: background 200ms ease, color 200ms ease;
+	}
+
+	.nav-button:hover {
+		background: #413f3f;
+		color: #f5f0e8;
 	}
 
 	.nav-new {
@@ -265,6 +272,7 @@
 		writing-mode: vertical-rl;
 		text-orientation: upright;
 		line-height: 32px;
+		padding-top: 0.64em;
 	}
 
 	.center-divider {
@@ -287,23 +295,26 @@
 		flex-direction: column;
 		justify-content: flex-start;
 		align-items: flex-start;
-		gap: 4rem;
+		gap: 2rem;
 	}
 
 	.left-column {
-		left: calc((56.25% - 7px) / 2 - 199px);
+		left: calc(28.125% - 181.5px);
+		padding-top: calc(320px + 4rem);
 	}
 
 	.right-column {
-		left: calc(50% + 63.5px);
+		left: calc(71.875% - 216.5px);
 	}
 
 	.kanji-block {
-		position: relative;
-		width: 100%;
+		position: absolute;
+		left: calc(28.125% - 181.5px);
+		top: 82px;
+		width: 398px;
 		max-width: 440px;
 		height: 320px;
-		margin: 0 auto 4rem;
+		margin: 0;
 	}
 
 	.space-kanji-img {
@@ -337,6 +348,8 @@
 		bottom: 64px;
 	}
 
+	.kanji-char, .kanji-slash { display: none; }
+
 	.search-row {
 		width: 100%;
 		max-width: 439px;
@@ -348,7 +361,7 @@
 		border: none;
 		border-bottom: 2px solid #413f3f;
 		font-family: 'Kurale', serif;
-		font-size: 24px;
+		font-size: 16px;
 		color: #413f3f;
 		padding: 0.25rem 0;
 		outline: none;
@@ -366,7 +379,16 @@
 		gap: 1rem;
 		width: 100%;
 		max-width: 439px;
+		flex: 1;
+		overflow-y: auto;
+		overflow-x: hidden;
+		scrollbar-width: thin;
+		scrollbar-color: #413f3f transparent;
 	}
+
+	:global(.notes-list::-webkit-scrollbar) { width: 2px; }
+	:global(.notes-list::-webkit-scrollbar-track) { background: transparent; }
+	:global(.notes-list::-webkit-scrollbar-thumb) { background: #413f3f; }
 
 	.note-row {
 		display: flex;
@@ -377,7 +399,7 @@
 		padding: 0;
 		color: #413f3f;
 		font-family: 'Kurale', serif;
-		font-size: 24px;
+		font-size: 16px;
 		line-height: 1.2;
 		cursor: pointer;
 		text-align: left;
@@ -389,6 +411,7 @@
 		justify-content: center;
 		flex-shrink: 0;
 		font-size: 2rem;
+		width: 2rem;
 	}
 
 	.note-icon.filled {
@@ -408,7 +431,7 @@
 
 	.empty {
 		font-family: 'Kurale', serif;
-		font-size: 24px;
+		font-size: 16px;
 		color: #413f3f;
 		opacity: 0.4;
 	}
@@ -473,7 +496,14 @@
 		color: #413f3f;
 		opacity: 0.8;
 		padding: 0;
+		overflow-y: auto;
+		scrollbar-width: thin;
+		scrollbar-color: #413f3f transparent;
 	}
+
+	:global(.note-textarea::-webkit-scrollbar) { width: 2px; }
+	:global(.note-textarea::-webkit-scrollbar-track) { background: transparent; }
+	:global(.note-textarea::-webkit-scrollbar-thumb) { background: #413f3f; }
 
 	.confirm-overlay {
 		position: fixed;
@@ -518,9 +548,10 @@
 		letter-spacing: 0.2em;
 		padding: 0.4rem 1.2rem;
 		cursor: pointer;
+		transition: background 200ms ease, color 200ms ease;
 	}
 
-	.confirm-yes:hover { background: #413f3f; color: #f5f0e8; }
+	.confirm-btn:hover { background: #413f3f; color: #f5f0e8; }
 
 	.saved-toast {
 		position: fixed;
@@ -528,7 +559,7 @@
 		left: 50%;
 		transform: translateX(-50%);
 		width: 42px;
-		height: 164px;
+		height: 200px;
 		border: 2px solid #413f3f;
 		border-top: none;
 		padding-top: 1.5rem;
@@ -537,7 +568,7 @@
 		align-items: center;
 		justify-content: center;
 		z-index: 50;
-		animation: toastIn 150ms ease-out both;
+		animation: toastIn 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
 	}
 
 	.saved-toast span {
@@ -551,7 +582,7 @@
 	}
 
 	@keyframes toastIn {
-		from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+		from { opacity: 0; transform: translateX(-50%) translateY(-100%); }
 		to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 	}
 
@@ -565,32 +596,71 @@
 		opacity: 0.3;
 	}
 
-	@media (max-width: 980px) {
+	@media (max-width: 640px) {
+		.nav-home, .nav-corner { font-size: 16px; }
+
+		.nav-button {
+			width: 36px;
+			height: 120px;
+			font-size: 16px;
+		}
+
 		.space-screen {
-			grid-template-columns: 1fr;
+			display: flex;
+			flex-direction: column;
+			min-height: 100vh;
+			overflow: visible;
+			padding: 0 calc(6.25% + 50px) 2rem;
 		}
 
-		.nav-new,
-		.nav-del,
-		.nav-home {
+		.center-divider { display: none; }
+
+		.left-column, .right-column {
 			position: static;
-			transform: none;
+			width: 100%;
+			height: auto;
+			gap: 1rem;
+		}
+
+		.kanji-block {
+			position: static;
+			order: -1;
+			width: 100%;
+			height: auto;
+			margin-bottom: 0.5rem;
+			padding-top: calc(6.25% + 40px);
+			display: flex;
+			justify-content: center;
+		}
+
+		.right-column { order: 0; margin-top: 1rem; }
+		.left-column { order: 1; margin-top: 3rem; padding-top: 0; }
+		.space-kanji-img { display: none; }
+		.kanji-divider { display: none; }
+		.kanji-char, .kanji-slash { display: inline; }
+		.kanji-name {
+			position: static;
+			font-size: 22px;
+			letter-spacing: 0.1em;
+			text-align: center;
+			width: 100%;
+		}
+
+		.notes-list { max-height: 30vh; }
+
+		.right-column { padding-bottom: 1.5rem; }
+		.quote-card { height: 40vh; min-height: 260px; }
+
+		.saved-toast {
+			width: auto;
+			min-width: 140px;
+			height: 42px;
+			border: none;
+			padding: 0 1.5rem;
+		}
+		.saved-toast span {
 			writing-mode: horizontal-tb;
-			text-orientation: initial;
-		}
-
-		.center-divider {
-			display: none;
-		}
-
-		.left-column,
-		.right-column {
-			padding: 2rem 1.5rem;
-			max-width: 100%;
-		}
-
-		.quote-card {
-			max-width: 100%;
+			letter-spacing: 0.3em;
 		}
 	}
 </style>

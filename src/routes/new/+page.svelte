@@ -68,7 +68,7 @@
 	<p>SAVE</p>
 </button>
 
-<main class="new-screen">
+<main class="new-screen fade-in">
 	<div class="input-block">
 		<div class="block-corner tl"></div>
 		<div class="block-corner tr"></div>
@@ -133,6 +133,12 @@
 		font-size: 20px;
 		cursor: pointer;
 		z-index: 10;
+		transition: background 200ms ease, color 200ms ease;
+	}
+
+	.nav-btn:hover {
+		background: #413f3f;
+		color: #f5f0e8;
 	}
 
 	.nav-btn p {
@@ -141,6 +147,7 @@
 		text-orientation: upright;
 		letter-spacing: 0.64em;
 		line-height: 32px;
+		padding-top: 0.64em;
 	}
 
 	.nav-back {
@@ -197,8 +204,13 @@
 	.block-corner.br { bottom: 0; right: 0; transform: rotate(180deg); }
 
 	.body-input {
-		width: 100%;
-		height: 100%;
+		position: absolute;
+		top: 40px;
+		left: 40px;
+		right: 40px;
+		bottom: 80px;
+		width: calc(100% - 80px);
+		height: calc(100% - 120px);
 		background: transparent;
 		border: none;
 		resize: none;
@@ -207,8 +219,8 @@
 		font-size: 18px;
 		line-height: 1.85;
 		color: #413f3f;
-		padding: 2rem 3rem;
-		box-sizing: border-box;
+		padding: 0;
+		overflow-y: auto;
 	}
 
 	.body-input::placeholder {
@@ -266,7 +278,7 @@
 		left: 50%;
 		transform: translateX(-50%);
 		width: 42px;
-		height: 164px;
+		height: 200px;
 		border: 2px solid #413f3f;
 		border-top: none;
 		padding-top: 1.5rem;
@@ -274,9 +286,8 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: var(--bg, #f5f0e8);
 		z-index: 50;
-		animation: toastIn 150ms ease-out both;
+		animation: toastIn 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
 	}
 
 	.saved-toast span {
@@ -290,7 +301,32 @@
 	}
 
 	@keyframes toastIn {
-		from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+		from { opacity: 0; transform: translateX(-50%) translateY(-100%); }
 		to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+	}
+
+	@media (max-width: 640px) {
+		.new-screen { overflow: visible; }
+
+		.nav-home { font-size: 16px; }
+
+		.nav-btn {
+			width: 36px;
+			height: 120px;
+			font-size: 16px;
+		}
+
+		.saved-toast {
+			width: auto;
+			min-width: 140px;
+			height: 42px;
+			border: none;
+			padding: 0 1.5rem;
+		}
+
+		.saved-toast span {
+			writing-mode: horizontal-tb;
+			letter-spacing: 0.3em;
+		}
 	}
 </style>
