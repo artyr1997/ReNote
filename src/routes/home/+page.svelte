@@ -148,11 +148,6 @@
 		</div>
 	{/if}
 
-	<!-- NEW -->
-	<a href="/new" class="edit">
-		<span>NEW</span>
-	</a>
-
 	{#each spaces as space, i}
 		{@const pos = positions[i]}
 		<div class="bottom-box" style="left: {pos.bottomBox.left}; top: {pos.bottomBox.top}; width: {pos.bottomBox.width}; height: {pos.bottomBox.height};">
