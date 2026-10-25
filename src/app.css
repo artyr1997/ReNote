@@ -26,9 +26,71 @@ select,
 	cursor: url('/kanji/hand.svg'), pointer;
 } */
 
+/* Hide scrollbars everywhere; scrolling still works */
+* {
+	scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+	display: none;
+}
+
+/* Lines fade out near the edges of scrollable blocks (see $lib/scrollFade.ts) */
+@property --fade-top {
+	syntax: '<length>';
+	inherits: false;
+	initial-value: 0px;
+}
+
+@property --fade-bottom {
+	syntax: '<length>';
+	inherits: false;
+	initial-value: 0px;
+}
+
+.scroll-fade {
+	--fade-top: 0px;
+	--fade-bottom: 0px;
+	mask-image: linear-gradient(to bottom, transparent, #000 var(--fade-top), #000 calc(100% - var(--fade-bottom)), transparent);
+	-webkit-mask-image: linear-gradient(to bottom, transparent, #000 var(--fade-top), #000 calc(100% - var(--fade-bottom)), transparent);
+	transition: --fade-top 200ms ease, --fade-bottom 200ms ease;
+}
+
+.scroll-fade.fade-top {
+	--fade-top: 56px;
+}
+
+.scroll-fade.fade-bottom {
+	--fade-bottom: 56px;
+}
+
+/* Ink brushstroke over text — note highlights and the selected note in lists.
+   Letters are "cut out" of the ink in the paper colour, like a mask.
+   Three-part vector stroke: the two rounded ends keep their shape, the body stretches.
+   Negative margins cancel the padding so text doesn't shift. */
+.ink-mark,
+.note-editor mark {
+	background:
+		url('/kanji/brush-left.svg') left center / auto 100% no-repeat,
+		url('/kanji/brush-right.svg') right center / auto 100% no-repeat,
+		url('/kanji/brush-mid.svg') 0.65em center / calc(100% - 1.3em) 100% no-repeat;
+	color: var(--bg);
+	caret-color: var(--bg);
+	padding: 0.25em 0.45em;
+	margin: -0.25em -0.45em;
+	-webkit-box-decoration-break: clone;
+	box-decoration-break: clone;
+}
+
+/* Placeholder disappears as soon as a field is focused */
+input:focus::placeholder,
+textarea:focus::placeholder {
+	opacity: 0 !important;
+}
+
 input,
 textarea {
-	cursor: url('/kanji/ibeam.svg'), text;
+	cursor: url('/kanji/ibeam.svg') 10 10, text;
 }
 
 html,

@@ -1,10 +1,53 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import type { Space } from '$lib/db';
+	import type { Note, Space } from '$lib/db';
 	import { db, SPACES } from '$lib/db';
+	import SpaceIcon from '$lib/SpaceIcon.svelte';
 
 	let { data } = $props();
-	let { spaces, noteCounts } = $derived(data);
+	let { spaces, noteCounts, notes } = $derived(data);
+
+	let searchQuery = $state('');
+	let searchInput: HTMLInputElement | undefined = $state();
+
+	let searchResults = $derived.by(() => {
+		const q = searchQuery.trim().toLowerCase();
+		if (!q) return [];
+		return notes
+			.filter(n => n.title.toLowerCase().includes(q) || n.body.toLowerCase().includes(q))
+			.slice(0, 8)
+			.map(n => ({ note: n, space: spaces.find(s => s.id === n.spaceId) }));
+	});
+
+	let selectedResult = $state(0);
+
+	// new query → highlight the first result again
+	$effect(() => {
+		searchQuery;
+		selectedResult = 0;
+	});
+
+	function openNote(note: Note, space: Space | undefined) {
+		if (!space) return;
+		goto(`/space/${space.element}?note=${note.id}`);
+	}
+
+	function handleSearchKeydown(e: KeyboardEvent) {
+		const count = searchResults.length;
+		if (e.key === 'ArrowDown' && count > 0) {
+			e.preventDefault();
+			selectedResult = (selectedResult + 1) % count;
+		} else if (e.key === 'ArrowUp' && count > 0) {
+			e.preventDefault();
+			selectedResult = (selectedResult - 1 + count) % count;
+		} else if (e.key === 'Enter' && count > 0) {
+			const { note, space } = searchResults[selectedResult];
+			openNote(note, space);
+		} else if (e.key === 'Escape') {
+			searchQuery = '';
+			searchInput?.blur();
+		}
+	}
 
 	let showExportConfirm = $state(false);
 	let exportNoteCount = $state(0);
@@ -51,6 +94,44 @@
 	}
 
 	let fileInput: HTMLInputElement;
+
+	const spaceShortcuts: Record<string, string> = {
+		KeyF: 'water', // Feel
+		KeyB: 'earth', // Body
+		KeyM: 'fire', // Mind
+		KeyS: 'air', // Soul
+	};
+
+	const shortcutKeys: Record<string, string> = {
+		water: 'F',
+		earth: 'B',
+		fire: 'M',
+		air: 'S',
+	};
+
+	function handleKeydown(e: KeyboardEvent) {
+		// export popup is modal: Enter exports, Esc closes, nothing else reacts
+		if (showExportConfirm) {
+			if (e.key === 'Enter') {
+				e.preventDefault();
+				exportNotes();
+			} else if (e.key === 'Escape') {
+				showExportConfirm = false;
+			}
+			return;
+		}
+		// typing in the search field must not trigger space shortcuts
+		if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
+		if (e.code === 'Slash') {
+			e.preventDefault();
+			searchInput?.focus();
+			return;
+		}
+		const element = spaceShortcuts[e.code];
+		if (element) {
+			goto(`/space/${element}`);
+		}
+	}
 
 	async function importNotes(e: Event) {
 		const file = (e.target as HTMLInputElement).files?.[0];
@@ -112,6 +193,68 @@
 	];
 </script>
 
+<svelte:window onkeydown={handleKeydown} />
+
+<!-- SEARCH: outside <main> so its backdrop blur covers the whole page (main's fade-in animation would clip it) -->
+{#if searchQuery.trim()}
+	<div class="home-search-overlay" onclick={() => searchQuery = ''} aria-hidden="true"></div>
+{/if}
+<div class="home-search">
+	<input
+		bind:this={searchInput}
+		bind:value={searchQuery}
+		onkeydown={handleSearchKeydown}
+		class="home-search-input"
+		type="text"
+		placeholder="Search"
+		title="Search all notes (/)"
+	/>
+	{#if searchQuery.trim()}
+		<div class="home-search-results">
+			{#if searchResults.length === 0}
+				<p class="home-search-empty">Nothing found.</p>
+			{:else}
+				{#each searchResults as { note, space }, i (note.id)}
+					<button
+						class="home-search-row"
+						class:active={i === selectedResult}
+						onclick={() => openNote(note, space)}
+						onmouseenter={() => selectedResult = i}
+					>
+						{#if space}
+							<SpaceIcon element={space.element} filled={i === selectedResult} size={14} />
+						{/if}
+						<span class="home-search-title">{note.title || 'Untitled'}</span>
+					</button>
+				{/each}
+			{/if}
+		</div>
+	{/if}
+</div>
+
+<!-- outside <main> so the backdrop blur covers the whole page, like INFO -->
+{#if showExportConfirm}
+	<div class="exp-overlay" onclick={() => showExportConfirm = false} aria-hidden="true"></div>
+	<div class="exp-box">
+		<p class="exp-heading">EXPORT</p>
+		<div class="exp-divider"></div>
+		<div class="exp-stats">
+			<p class="exp-total">{exportNoteCount} {exportNoteCount === 1 ? 'note' : 'notes'}</p>
+			<div class="exp-spaces">
+				{#each SPACES as s}
+					<div class="exp-space-row">
+						<SpaceIcon element={s.element} size={12} />
+						<span class="exp-space-name">{s.english.toUpperCase()}</span>
+						<span class="exp-space-count">{exportSpaceCounts[s.english] ?? 0}</span>
+					</div>
+				{/each}
+			</div>
+		</div>
+		<div class="exp-divider"></div>
+		<button class="exp-confirm-btn" onclick={exportNotes}>EXPORT</button>
+	</div>
+{/if}
+
 <main class="home fade-in">
 	<!-- Background -->
 	<div class="background" aria-hidden="true"></div>
@@ -121,32 +264,10 @@
 
 	<!-- IMP -->
 	<input bind:this={fileInput} type="file" accept=".json" onchange={importNotes} class="file-input" />
-	<button class="imp" onclick={() => fileInput.click()}>IMP</button>
+	<button class="imp" onclick={() => fileInput.click()} title="Import">IMP</button>
 
 	<!-- EXP -->
-	<button class="exp" onclick={openExportConfirm}>EXP</button>
-
-	{#if showExportConfirm}
-		<div class="exp-overlay" onclick={() => showExportConfirm = false} aria-hidden="true"></div>
-		<div class="exp-box">
-			<p class="exp-heading">EXPORT</p>
-			<div class="exp-divider"></div>
-			<div class="exp-stats">
-				<p class="exp-total">{exportNoteCount} {exportNoteCount === 1 ? 'note' : 'notes'}</p>
-				<div class="exp-spaces">
-					{#each SPACES as s}
-						<div class="exp-space-row">
-							<span class="exp-dot" style="color: {s.color}">◆</span>
-							<span class="exp-space-name">{s.english.toUpperCase()}</span>
-							<span class="exp-space-count">{exportSpaceCounts[s.english] ?? 0}</span>
-						</div>
-					{/each}
-				</div>
-			</div>
-			<div class="exp-divider"></div>
-			<button class="exp-confirm-btn" onclick={exportNotes}>EXPORT</button>
-		</div>
-	{/if}
+	<button class="exp" onclick={openExportConfirm} title="Export">EXP</button>
 
 	{#each spaces as space, i}
 		{@const pos = positions[i]}
@@ -154,7 +275,7 @@
 			<p class="label">{pos.label.text}</p>
 		</div>
 		<div class="top-box" style="left: {pos.topBox.left}; top: {pos.topBox.top}; width: {pos.topBox.width}; height: {pos.topBox.height};">
-			<div class="diamond" style="background-color: {space.color};"></div>
+			<SpaceIcon element={space.element} size={20} />
 		</div>
 		<img
 			class="kanji-image"
@@ -162,7 +283,7 @@
 			src="/kanji/{space.element}.png"
 			alt="{space.kanji}"
 			onclick={() => goto(`/space/${space.element}`)}
-			title="{space.english} — {noteCounts[space.id!] ?? 0} notes"
+			title="{space.english} ({shortcutKeys[space.element]}) — {noteCounts[space.id!] ?? 0} notes"
 		/>
 	{/each}
 </main>
@@ -198,7 +319,7 @@
 	.edit,
 	.info {
 		position: absolute;
-		border: 2px solid #413f3f;
+		border: 2px solid #57585A;
 		width: 42px;
 		height: 164px;
 		display: flex;
@@ -213,7 +334,7 @@
 
 	.edit:hover,
 	.info:hover {
-		background: #413f3f;
+		background: #57585A;
 		color: #f5f0e8;
 	}
 
@@ -235,7 +356,7 @@
 	.bottom-box,
 	.top-box {
 		position: absolute;
-		border: 2px solid #413f3f;
+		border: 2px solid #57585A;
 		border-top: none;
 		border-bottom: none;
 		display: flex;
@@ -244,11 +365,11 @@
 	}
 
 	.bottom-box {
-		border-bottom: 2px solid #413f3f;
+		border-bottom: 2px solid #57585A;
 	}
 
 	.top-box {
-		border-top: 2px solid #413f3f;
+		border-top: 2px solid #57585A;
 	}
 
 	.label {
@@ -260,12 +381,6 @@
 		text-orientation: upright;
 		line-height: 32px;
 		letter-spacing: 0.64em;
-	}
-
-	.diamond {
-		width: 16px;
-		height: 16px;
-		transform: rotate(-45deg);
 	}
 
 	.kanji-image {
@@ -281,6 +396,90 @@
 
 	.file-input {
 		display: none;
+	}
+
+	/* Blurs the page behind open search results */
+	.home-search-overlay {
+		position: fixed;
+		inset: 0;
+		z-index: 55; /* above INFO (50), below popups (60+) */
+		backdrop-filter: blur(6px);
+		-webkit-backdrop-filter: blur(6px);
+	}
+
+	/* Search across all notes, top center */
+	.home-search {
+		position: absolute;
+		top: calc(6.25% + 1px);
+		left: 50%;
+		transform: translateX(-50%);
+		width: 360px;
+		max-width: calc(100% - 160px);
+		z-index: 56;
+	}
+
+	.home-search-input {
+		width: 100%;
+		background: transparent;
+		border: none;
+		outline: none;
+		font-family: 'Kurale', serif;
+		font-size: 24px;
+		line-height: 32px;
+		text-align: center;
+		color: #474747;
+		padding: 0;
+	}
+
+	.home-search-input::placeholder {
+		color: #57585A;
+		opacity: 0.4;
+	}
+
+	.home-search-results {
+		margin-top: 1rem;
+		padding: 1.25rem 1.5rem;
+		background: var(--bg) url('/noise.svg') repeat;
+		border: 2px solid #57585A;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.home-search-row {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		background: transparent;
+		border: none;
+		padding: 0;
+		color: #57585A;
+		font-family: 'Kurale', serif;
+		font-size: 16px;
+		line-height: 1.2;
+		text-align: left;
+		cursor: pointer;
+		opacity: 0.8;
+		transition: opacity 200ms ease;
+	}
+
+	.home-search-row.active {
+		opacity: 1;
+	}
+
+	.home-search-title {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		min-width: 0;
+	}
+
+	.home-search-empty {
+		font-family: 'Kurale', serif;
+		font-size: 16px;
+		color: #57585A;
+		opacity: 0.4;
+		text-align: center;
 	}
 
 	.imp,
@@ -309,10 +508,13 @@
 		bottom: calc(6.25% + 1px);
 	}
 
+	/* same look as the INFO popup: blurred page behind, paper box */
 	.exp-overlay {
 		position: fixed;
 		inset: 0;
 		z-index: 60;
+		backdrop-filter: blur(6px);
+		-webkit-backdrop-filter: blur(6px);
 	}
 
 	.exp-box {
@@ -320,8 +522,8 @@
 		top: 50%;
 		left: 50%;
 		transform: translate(-50%, -50%);
-		background: var(--bg, #f5f0e8);
-		border: 2px solid #413f3f;
+		background: var(--bg) url('/noise.svg') repeat;
+		border: 2px solid #57585A;
 		padding: 2.5rem 3rem;
 		display: flex;
 		flex-direction: column;
@@ -342,7 +544,7 @@
 	.exp-divider {
 		width: 100%;
 		height: 1px;
-		background: #413f3f;
+		background: #57585A;
 		opacity: 0.3;
 	}
 
@@ -375,10 +577,6 @@
 		gap: 0.75rem;
 	}
 
-	.exp-dot {
-		font-size: 0.75rem;
-	}
-
 	.exp-space-name {
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 13px;
@@ -396,7 +594,7 @@
 
 	.exp-confirm-btn {
 		background: transparent;
-		border: 2px solid #413f3f;
+		border: 2px solid #57585A;
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 16px;
 		color: #474747;
@@ -407,7 +605,7 @@
 	}
 
 	.exp-confirm-btn:hover {
-		background: #413f3f;
+		background: #57585A;
 		color: #f5f0e8;
 	}
 

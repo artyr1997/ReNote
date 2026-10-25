@@ -3,8 +3,8 @@ import { error } from '@sveltejs/kit';
 
 export const ssr = false;
 
-export async function load({ params }) {
-	if (!browser) return { space: null, notes: [] };
+export async function load({ params, url }) {
+	if (!browser) return { space: null, notes: [], selectedId: null };
 
 	const { db } = await import('$lib/db');
 	const space = await db.spaces.where('element').equals(params.element).first();
@@ -16,5 +16,7 @@ export async function load({ params }) {
 		.reverse()
 		.sortBy('updatedAt');
 
-	return { space, notes };
+	const selectedId = Number(url.searchParams.get('note')) || null;
+
+	return { space, notes, selectedId };
 }

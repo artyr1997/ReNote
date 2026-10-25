@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { db, SPACES } from './db';
+	import SpaceIcon from './SpaceIcon.svelte';
 
 	let open = $state(false);
 	let noteCount = $state(0);
@@ -19,7 +20,30 @@
 		if (!open) loadStats();
 		open = !open;
 	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape' && open) {
+			open = false;
+		}
+	}
+
+	const shortcuts = [
+		{ key: 'Ctrl/⌘ + S', desc: 'Save' },
+		{ key: 'Ctrl/⌘ + B', desc: 'Highlight selected text' },
+		{ key: 'Esc', desc: 'Back / Close' },
+		{ key: 'F / B / M / S', desc: 'Open Feel / Body / Mind / Soul' },
+		{ key: 'N', desc: 'New note' },
+		{ key: 'E / Enter', desc: 'Edit note' },
+		{ key: '/', desc: 'Search' },
+		{ key: 'Ctrl/⌘ + F', desc: 'Search / Full mode while editing' },
+		{ key: '↑ / ↓', desc: 'Navigate notes' },
+		{ key: '← / →', desc: 'Switch space' },
+		{ key: 'Option/Alt + ← / →', desc: 'Switch space (new / full note)' },
+		{ key: 'Backspace', desc: 'Delete note' },
+	];
 </script>
+
+<svelte:window onkeydown={handleKeydown} />
 
 <button class="info-btn" onclick={toggle}>INFO</button>
 
@@ -33,12 +57,21 @@
 			<div class="info-spaces">
 				{#each SPACES as s}
 					<div class="info-space-row">
-						<span class="info-dot" style="color: {s.color}">◆</span>
+						<SpaceIcon element={s.element} size={12} />
 						<span class="info-space-name">{s.english.toUpperCase()}</span>
 						<span class="info-space-count">{spaceCounts[s.english] ?? 0}</span>
 					</div>
 				{/each}
 			</div>
+		</div>
+		<div class="info-divider"></div>
+		<div class="info-shortcuts">
+			{#each shortcuts as s}
+				<div class="shortcut-row">
+					<span class="shortcut-key">{s.key}</span>
+					<span class="shortcut-desc">{s.desc}</span>
+				</div>
+			{/each}
 		</div>
 		<div class="info-divider"></div>
 		<p class="info-footer">local · private · offline</p>
@@ -68,6 +101,8 @@
 		position: fixed;
 		inset: 0;
 		z-index: 60;
+		backdrop-filter: blur(6px);
+		-webkit-backdrop-filter: blur(6px);
 	}
 
 	.info-box {
@@ -75,8 +110,9 @@
 		top: 50%;
 		left: 50%;
 		transform: translate(-50%, -50%);
-		background: var(--bg, #f5f0e8);
-		border: 2px solid #413f3f;
+		/* same paper background as the app */
+		background: var(--bg) url('/noise.svg') repeat;
+		border: 2px solid #57585A;
 		padding: 2.5rem 3rem;
 		display: flex;
 		flex-direction: column;
@@ -84,6 +120,8 @@
 		gap: 1.5rem;
 		z-index: 70;
 		min-width: 280px;
+		max-height: 80vh;
+		overflow-y: auto;
 	}
 
 	.info-heading {
@@ -97,7 +135,7 @@
 	.info-divider {
 		width: 100%;
 		height: 1px;
-		background: #413f3f;
+		background: #57585A;
 		opacity: 0.3;
 	}
 
@@ -130,10 +168,6 @@
 		gap: 0.75rem;
 	}
 
-	.info-dot {
-		font-size: 0.75rem;
-	}
-
 	.info-space-name {
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 13px;
@@ -147,6 +181,36 @@
 		font-size: 18px;
 		color: #474747;
 		opacity: 0.6;
+	}
+
+	.info-shortcuts {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+		width: 100%;
+	}
+
+	.shortcut-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+	}
+
+	.shortcut-key {
+		font-family: 'Noto Sans JP', sans-serif;
+		font-size: 11px;
+		letter-spacing: 0.05em;
+		color: #474747;
+		opacity: 0.6;
+		white-space: nowrap;
+	}
+
+	.shortcut-desc {
+		font-family: 'Kurale', serif;
+		font-size: 14px;
+		color: #474747;
+		text-align: right;
 	}
 
 	.info-footer {

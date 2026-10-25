@@ -19,13 +19,15 @@ export interface Note {
 	updatedAt: number;
 }
 
+export const TITLE_MAX = 40;
+
 export const SPACES: Omit<Space, 'id'>[] = [
 	{
 		element: 'water',
 		kanji: '水',
 		english: 'Feel',
 		color: '#3FB5D3',
-		description: '水 / Feel. Everything you absorb. Everything that stays. Knowledge does not arrive complete. It settles. Layer by layer. Thought by thought. Over time, it becomes clarity. This is where you keep what the world has already said so you can understand it on your own terms.',
+		description: '水 / Feel.   Everything you absorb. Everything that stays. Knowledge does not arrive complete. It settles. Layer by layer. Thought by thought. Over time, it becomes clarity. This is where you keep what the world has already said so you can understand it on your own terms.',
 		types: ['Summaries', 'Quotes', 'Facts', 'Instructions', 'Glossaries', 'Research', 'References'],
 	},
 	{

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { db } from '$lib/db';
+	import { scrollFade } from '$lib/scrollFade';
 
 	let { data } = $props();
 	let { note, space } = $derived(data);
@@ -13,11 +14,6 @@
 			body = note.body;
 		}
 	});
-
-	function deriveTitle(text: string): string {
-		const firstLine = text.split('\n')[0].trim();
-		return firstLine.slice(0, 60) || 'Untitled';
-	}
 
 	function wordCount(text: string): number {
 		return text.trim().split(/\s+/).filter(Boolean).length;
@@ -32,7 +28,6 @@
 	async function save() {
 		if (!note?.id) return;
 		await db.notes.update(note.id, {
-			title: deriveTitle(body),
 			body: body.trim(),
 			updatedAt: Date.now(),
 		});
@@ -42,7 +37,18 @@
 	function exit() {
 		if (note) goto(`/note/${note.id}`);
 	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		if ((e.metaKey || e.ctrlKey) && e.code === 'KeyS') {
+			e.preventDefault();
+			save();
+		} else if (e.key === 'Escape') {
+			exit();
+		}
+	}
 </script>
+
+<svelte:window onkeydown={handleKeydown} />
 
 <!-- Frame corners -->
 <div class="frame" aria-hidden="true">
@@ -53,13 +59,13 @@
 </div>
 
 <!-- Left top nav: EXIT -->
-<button class="nav-home" onclick={exit}>EXIT</button>
+<button class="nav-home" onclick={exit} title="Exit (Esc)">EXIT</button>
 
 <!-- Left action button: INFO -->
 <button class="nav-info" onclick={() => showInfo = !showInfo}>INFO</button>
 
 <!-- Right button: SAVE -->
-<button class="nav-edit" onclick={save}>SAVE</button>
+<button class="nav-edit" onclick={save} title="Save (Ctrl/⌘+S)">SAVE</button>
 
 <main class="screen edit-screen fade-in">
 	<h1 class="edit-title">EDIT</h1>
@@ -90,6 +96,7 @@
 	<textarea
 		bind:value={body}
 		class="body-input"
+		use:scrollFade
 		placeholder="Start editing…"
 	></textarea>
 </main>
@@ -125,7 +132,7 @@
 	.corner::after {
 		content: '';
 		position: absolute;
-		background: #413f3f;
+		background: #57585A;
 	}
 
 	.corner::before {
@@ -188,7 +195,7 @@
 		position: absolute;
 		width: 42px;
 		height: 137px;
-		border: 2px solid #413f3f;
+		border: 2px solid #57585A;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -278,7 +285,7 @@
 		font-family: 'Noto Sans JP', sans-serif;
 		font-weight: 350;
 		font-size: 36px;
-		color: #413f3f;
+		color: #57585A;
 		text-align: center;
 		letter-spacing: 0.08em;
 		margin: 0;

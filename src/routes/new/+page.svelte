@@ -1,14 +1,19 @@
 <script lang="ts">
+	import SpaceIcon from '$lib/SpaceIcon.svelte';
+	import NoteEditor from '$lib/NoteEditor.svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { db } from '$lib/db';
+	import { db, TITLE_MAX } from '$lib/db';
 	import type { Space } from '$lib/db';
 
 	let { data } = $props();
 	let { spaces, preselectedElement } = $derived(data);
 
+	let title = $state('');
 	let body = $state('');
 	let selectedIdx = $state(0);
 	let showSaved = $state(false);
+	let editor: HTMLDivElement | undefined = $state();
 
 	$effect(() => {
 		if (spaces.length > 0 && preselectedElement) {
@@ -27,21 +32,69 @@
 		selectedIdx = (selectedIdx + 1) % spaces.length;
 	}
 
-	function deriveTitle(text: string): string {
-		const firstLine = text.split('\n')[0].trim();
-		return firstLine.slice(0, 60) || 'Untitled';
+	// autosave: the note is created on the first change, then updated.
+	// Writes are chained so a quick second save can't create a duplicate.
+	let noteId: number | null = null;
+	let saving: Promise<void> = Promise.resolve();
+	let saveTimer: ReturnType<typeof setTimeout> | null = null;
+
+	function persist(force = false) {
+		saving = saving.then(async () => {
+			if (!selectedSpace?.id) return;
+			const now = Date.now();
+			const fields = {
+				spaceId: selectedSpace.id,
+				title: title.trim().slice(0, TITLE_MAX),
+				body: body.trim(),
+				updatedAt: now,
+			};
+			if (noteId === null) {
+				if (!force && !fields.title && !fields.body) return; // nothing typed yet
+				noteId = await db.notes.add({ ...fields, createdAt: now });
+			} else {
+				await db.notes.update(noteId, fields);
+			}
+		});
+		return saving;
+	}
+
+	$effect(() => {
+		title; body; selectedSpace;
+		if (saveTimer) clearTimeout(saveTimer);
+		saveTimer = setTimeout(() => {
+			saveTimer = null;
+			persist();
+		}, 600);
+	});
+
+	function flushSave() {
+		if (!saveTimer) return;
+		clearTimeout(saveTimer);
+		saveTimer = null;
+		persist();
+	}
+
+	onDestroy(flushSave);
+
+	// opens straight into writing, like the full note page
+	onMount(() => {
+		requestAnimationFrame(() => editor?.focus());
+	});
+
+	// same page, fresh note: save the current one, then clear the form
+	async function newNote() {
+		flushSave();
+		await saving;
+		noteId = null;
+		title = '';
+		body = '';
+		editor?.focus();
 	}
 
 	async function save() {
-		if (!selectedSpace?.id) return;
-		const now = Date.now();
-		await db.notes.add({
-			spaceId: selectedSpace.id,
-			title: deriveTitle(body),
-			body: body.trim(),
-			createdAt: now,
-			updatedAt: now,
-		});
+		if (saveTimer) clearTimeout(saveTimer);
+		saveTimer = null;
+		await persist(true);
 		showSaved = true;
 		setTimeout(() => goto(`/space/${selectedSpace!.element}`), 1000);
 	}
@@ -49,45 +102,62 @@
 	function back() {
 		history.back();
 	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		if ((e.metaKey || e.ctrlKey) && e.code === 'KeyS') {
+			e.preventDefault();
+			save();
+		} else if (e.key === 'Escape') {
+			back();
+		} else if (e.altKey && e.key === 'ArrowLeft') {
+			e.preventDefault();
+			prev();
+		} else if (e.altKey && e.key === 'ArrowRight') {
+			e.preventDefault();
+			next();
+		}
+	}
 </script>
 
-<!-- HOME top-left -->
-<a class="nav-home" href="/home">HOME</a>
+<svelte:window onkeydown={handleKeydown} onpagehide={flushSave} />
 
 {#if showSaved}
 	<div class="saved-toast"><span>SAVED</span></div>
 {/if}
 
 <!-- BACK left-center -->
-<button class="nav-btn nav-back" onclick={back}>
+<button class="nav-btn nav-back" onclick={back} title="Back (Esc)">
 	<p>BACK</p>
 </button>
 
-<!-- SAVE right-center -->
-<button class="nav-btn nav-save" onclick={save}>
-	<p>SAVE</p>
+<!-- NEW right-center: start another note (this one is autosaved) -->
+<button class="nav-btn nav-new" onclick={newNote} title="New note">
+	<p>NEW</p>
 </button>
 
 <main class="new-screen fade-in">
 	<div class="input-block">
-		<div class="block-corner tl"></div>
-		<div class="block-corner tr"></div>
-		<div class="block-corner bl"></div>
-		<div class="block-corner br"></div>
-		<textarea
+		<input
+			class="title-input"
+			type="text"
+			maxlength={TITLE_MAX}
+			placeholder="Title"
+			bind:value={title}
+		/>
+		<NoteEditor
+			bind:element={editor}
 			class="body-input"
 			bind:value={body}
 			placeholder="Begin writing…"
-		></textarea>
+		/>
 		<div class="element-selector">
-			<button class="el-nav-btn" onclick={prev}>←</button>
-			<div class="el-center">
+			<button class="el-nav-btn" onclick={prev} title="Previous space (Option/Alt+←)">←</button>
+			<div class="el-center" title={selectedSpace ? `${selectedSpace.kanji} ${selectedSpace.english}` : ''}>
 				{#if selectedSpace}
-					<span class="el-diamond" style="color: {selectedSpace.color}">◆</span>
-					<span class="el-name">{selectedSpace.kanji} {selectedSpace.english.toUpperCase()}</span>
+					<SpaceIcon element={selectedSpace.element} size={20} />
 				{/if}
 			</div>
-			<button class="el-nav-btn" onclick={next}>→</button>
+			<button class="el-nav-btn" onclick={next} title="Next space (Option/Alt+→)">→</button>
 		</div>
 	</div>
 </main>
@@ -104,26 +174,12 @@
 	}
 
 	/* Navigation */
-	.nav-home {
-		position: fixed;
-		left: calc(6.25% - 7px);
-		top: calc(6.25% + 1px);
-		font-family: 'Noto Sans JP', sans-serif;
-		font-size: 20px;
-		color: #474747;
-		text-decoration: none;
-		writing-mode: vertical-rl;
-		text-orientation: upright;
-		letter-spacing: 0.64em;
-		line-height: 32px;
-		z-index: 10;
-	}
 
 	.nav-btn {
 		position: fixed;
 		width: 42px;
 		height: 164px;
-		border: 2px solid #413f3f;
+		border: 2px solid #57585A;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -137,7 +193,7 @@
 	}
 
 	.nav-btn:hover {
-		background: #413f3f;
+		background: #57585A;
 		color: #f5f0e8;
 	}
 
@@ -156,7 +212,7 @@
 		transform: translateY(-50%);
 	}
 
-	.nav-save {
+	.nav-new {
 		right: calc(6.25% - 7px);
 		top: 50%;
 		transform: translateY(-50%);
@@ -165,52 +221,21 @@
 	/* Input block */
 	.input-block {
 		position: absolute;
-		top: calc(6.25% + 2px);
-		bottom: calc(6.25% + 2px);
+		/* same frame as the full note page */
+		top: calc(6.25% + 1px);
+		bottom: calc(6.25% + 1px);
 		left: calc(6.25% + 56px);
 		right: calc(6.25% + 56px);
 	}
 
-	.block-corner {
+	.input-block :global(.body-input) {
 		position: absolute;
-		width: 18px;
-		height: 18px;
-	}
-
-	.block-corner::before,
-	.block-corner::after {
-		content: '';
-		position: absolute;
-		background: #413f3f;
-	}
-
-	.block-corner::before {
-		width: 100%;
-		height: 2px;
-		top: 0;
-		left: 0;
-	}
-
-	.block-corner::after {
-		width: 2px;
-		height: 100%;
-		top: 0;
-		left: 0;
-	}
-
-	.block-corner.tl { top: 0; left: 0; }
-	.block-corner.tr { top: 0; right: 0; transform: rotate(90deg); }
-	.block-corner.bl { bottom: 0; left: 0; transform: rotate(-90deg); }
-	.block-corner.br { bottom: 0; right: 0; transform: rotate(180deg); }
-
-	.body-input {
-		position: absolute;
-		top: 40px;
+		top: 56px;
 		left: 40px;
 		right: 40px;
-		bottom: 80px;
+		bottom: 72px;
 		width: calc(100% - 80px);
-		height: calc(100% - 120px);
+		height: calc(100% - 128px);
 		background: transparent;
 		border: none;
 		resize: none;
@@ -218,13 +243,32 @@
 		font-family: 'Kurale', serif;
 		font-size: 18px;
 		line-height: 1.85;
-		color: #413f3f;
-		padding: 0;
+		color: #474747;
+		/* room for highlight strokes that start/end at the line edge */
+		padding: 0 0.5em;
 		overflow-y: auto;
 	}
 
-	.body-input::placeholder {
-		color: #413f3f;
+	.title-input {
+		position: absolute;
+		top: 0;
+		left: 40px;
+		right: 40px;
+		width: calc(100% - 80px);
+		background: transparent;
+		border: none;
+		outline: none;
+		font-family: 'Kurale', serif;
+		font-size: 24px;
+		line-height: 32px;
+		letter-spacing: 0.05em;
+		text-align: center;
+		color: #474747;
+		padding: 0;
+	}
+
+	.title-input::placeholder {
+		color: #57585A;
 		opacity: 0.25;
 		font-style: italic;
 	}
@@ -232,12 +276,12 @@
 	/* Element selector */
 	.element-selector {
 		position: absolute;
-		bottom: 24px;
+		bottom: 0;
 		left: 50%;
 		transform: translateX(-50%);
 		display: flex;
 		align-items: center;
-		gap: 2rem;
+		gap: 0.5rem;
 	}
 
 	.el-nav-btn {
@@ -258,18 +302,8 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 0.2rem;
-		min-width: 60px;
-	}
-
-	.el-diamond {
-		font-size: 1rem;
-	}
-
-	.el-name {
-		font-family: 'Noto Sans JP', sans-serif;
-		font-size: 1rem;
-		letter-spacing: 0.2em;
-		white-space: nowrap;
+		/* fixed width so the arrows don't shift between spaces */
+		width: 48px;
 	}
 
 	.saved-toast {
@@ -279,7 +313,7 @@
 		transform: translateX(-50%);
 		width: 42px;
 		height: 200px;
-		border: 2px solid #413f3f;
+		border: 2px solid #57585A;
 		border-top: none;
 		padding-top: 1.5rem;
 		padding-bottom: 1.5rem;
@@ -308,7 +342,6 @@
 	@media (max-width: 640px) {
 		.new-screen { overflow: visible; }
 
-		.nav-home { font-size: 16px; }
 
 		.nav-btn {
 			width: 36px;

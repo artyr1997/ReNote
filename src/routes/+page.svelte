@@ -1,11 +1,17 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { seedSpaces, SPACES } from '$lib/db';
+	import SpaceIcon from '$lib/SpaceIcon.svelte';
 
 	async function start() {
 		await seedSpaces();
 		goto('/home');
 	}
+
+	let scroller: HTMLDivElement;
+
+	onMount(() => scroller.focus({ preventScroll: true }));
 
 	function chunkTags(types: string[], size = 4): string[] {
 		const rows = [];
@@ -16,8 +22,8 @@
 	}
 </script>
 
-<div class="landing-page">
-	<div class="hero">
+<div class="landing-page" bind:this={scroller} tabindex="-1">
+	<section class="slide hero">
 		<button class="start-button" onclick={start}>
 			<span>OPEN</span>
 		</button>
@@ -34,107 +40,101 @@
 			</div>
 			<p class="hero-tagline">just notes.</p>
 		</div>
-	</div>
+	</section>
 
-	<main class="content">
-		<section class="section philosophy">
-			<p class="section-heading">PHILOSOPHY</p>
-			<div class="section-copy">
-				<p>
-					We live in a time of endless features. Apps promise everything but slowly take your time with them.
-				</p>
-				<p>
-					Notes became systems but systems became noise. What was meant to be simple turned into something you have to learn.
-				</p>
-				<p>
-					ReNote is different. Just you and your thoughts. Your notes stay where they belong: in your browser, under your control.
-				</p>
-				<p>
-					This is your space again.
-				</p>
+	<section class="slide section philosophy">
+		<p class="section-heading">PHILOSOPHY</p>
+		<div class="section-copy">
+			<p>
+				We live in a time of endless features. Apps promise everything but slowly take your time with them.
+			</p>
+			<p>
+				Notes became systems but systems became noise. What was meant to be simple turned into something you have to learn.
+			</p>
+			<p>
+				ReNote is different. Just you and your thoughts. Your notes stay where they belong: in your browser, under your control.
+			</p>
+		</div>
+	</section>
+
+	<section class="slide section no-section">
+		<p class="section-heading">NO</p>
+		<div class="no-box">
+			<div class="no-copy">
+				Ads · Notifications · Paywalls · Tracking<br>
+				Algorithms · Manipulation · Accounts · AI
 			</div>
-		</section>
+		</div>
+		<p class="no-after"><span class="ink-mark">Only you and your notes.</span></p>
+	</section>
 
-		<section class="section no-section">
-			<p class="section-heading">NO</p>
-			<div class="no-box">
-				<div class="block-corner tl"></div>
-				<div class="block-corner tr"></div>
-				<div class="block-corner bl"></div>
-				<div class="block-corner br"></div>
-				<div class="no-copy">
-					Ads · Notifications · Paywalls · Tracking<br>
-					Algorithms · Manipulation · Accounts · AI
+	{#each SPACES as space, index}
+		<section class="slide section space-section">
+			<p class="section-heading">SPACE</p>
+			<div class="space-card {index % 2 === 0 ? 'odd' : 'even'}">
+				<div class="space-visual">
+					<div class="space-top-box">
+						<SpaceIcon element={space.element} size={18} />
+					</div>
+					<img src="/kanji/{space.element}.png" alt={space.kanji} class="space-kanji-img" />
+					<div class="space-bottom-box">
+						<p class="space-label">{space.english.toUpperCase()}</p>
+					</div>
+				</div>
+				<div class="space-content">
+					<p class="space-copy">{space.description}</p>
+					<div class="tags-block">
+						{#each chunkTags(space.types) as row}
+							<p class="space-tags">{row}</p>
+						{/each}
+					</div>
 				</div>
 			</div>
 		</section>
+	{/each}
 
-		<section class="section space-section">
-			<p class="section-heading">SPACE</p>
-			<div class="space-grid">
-				{#each SPACES as space, index}
-					<div class="space-card {index % 2 === 0 ? 'odd' : 'even'}">
-						<div class="space-visual">
-							<div class="space-top-box">
-								<div class="space-diamond" style="background: {space.color}"></div>
-							</div>
-							<img src="/kanji/{space.element}.png" alt={space.kanji} class="space-kanji-img" />
-							<div class="space-bottom-box">
-								<p class="space-label">{space.english.toUpperCase()}</p>
-							</div>
-						</div>
-						<div class="space-content">
-							<p class="space-copy">{space.description}</p>
-							<div class="tags-block">
-							<div class="block-corner tr"></div>
-							<div class="block-corner bl"></div>
-							{#each chunkTags(space.types) as row}
-								<p class="space-tags">{row}</p>
-							{/each}
-						</div>
-						</div>
-					</div>
-				{/each}
-			</div>
-		</section>
-
-		<section class="section backup-section">
-			<p class="section-heading">IMPORT / EXPORT</p>
-			<div class="section-copy">
-				<p>
-					Your notes live entirely on your device. That means you are the only one responsible for keeping them safe. ReNote gives you two tools to do that: export your notes as a plain JSON file you can store anywhere, and import them back whenever you need.
-				</p>
-				<p>
-					Use export before switching devices, clearing your browser, or simply as a personal archive. Use import to restore a backup or move your notes to a new machine.
-				</p>
-				<p>
-					Your data is yours, always.
-				</p>
-			</div>
-		</section>
-
+	<section class="slide section backup-section">
+		<p class="section-heading">IMPORT / EXPORT</p>
+		<div class="section-copy">
+			<p>
+				Your notes live entirely on your device. That means you are the only one responsible for keeping them safe. ReNote gives you two tools to do that: export your notes as a plain JSON file you can store anywhere, and import them back whenever you need.
+			</p>
+			<p>
+				Use export before switching devices, clearing your browser, or simply as a personal archive. Use import to restore a backup or move your notes to a new machine.
+			</p>
+			<p>
+				<span class="ink-mark">Your data is yours, always.</span>
+			</p>
+		</div>
 		<p class="copyright">© 2026 Re:Note</p>
-	</main>
-
+	</section>
 </div>
 
 <style>
+	/* Each section is a full-screen slide; scrolling snaps to one at a time */
 	.landing-page {
 		position: relative;
-		min-height: 100vh;
 		width: 100%;
+		height: 100vh;
+		height: 100dvh;
+		overflow-y: auto;
+		overflow-x: hidden;
+		scroll-snap-type: y mandatory;
+		outline: none;
+	}
+
+	.slide {
+		position: relative;
+		width: 100%;
+		min-height: 100vh;
+		min-height: 100dvh;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		padding: 2rem 1.5rem 4rem;
-	}
-
-	.hero {
-		width: min(1120px, 100%);
-		min-height: calc(100vh - 4rem);
-		display: grid;
-		place-items: center;
-		margin-bottom: 16rem;
+		justify-content: center;
+		padding: 4rem calc(6.25% + 80px);
+		scroll-snap-align: center;
+		scroll-snap-stop: always;
 	}
 
 	.hero-block {
@@ -202,7 +202,7 @@
 	.block-corner::after {
 		content: '';
 		position: absolute;
-		background: #413f3f;
+		background: #57585A;
 	}
 
 	.block-corner::before {
@@ -219,10 +219,8 @@
 		left: 0;
 	}
 
-	.block-corner.tl { top: 0; left: 0; }
 	.block-corner.tr { top: 0; right: 0; transform: rotate(90deg); }
 	.block-corner.bl { bottom: 0; left: 0; transform: rotate(-90deg); }
-	.block-corner.br { bottom: 0; right: 0; transform: rotate(180deg); }
 
 	.hero-meta {
 		position: absolute;
@@ -261,16 +259,8 @@
 		letter-spacing: 0.12em;
 	}
 
-	.content {
+	.section > * {
 		width: min(1120px, 100%);
-		display: flex;
-		flex-direction: column;
-		gap: 16rem;
-	}
-
-	.section {
-		width: 100%;
-		padding: 0;
 	}
 
 	.section-heading {
@@ -307,7 +297,11 @@
 		opacity: 0.9;
 		letter-spacing: 0.15em;
 		text-align: center;
-		margin: 6rem auto 4rem;
+		position: absolute;
+		bottom: 3rem;
+		left: 0;
+		right: 0;
+		width: auto;
 	}
 
 	.no-section .no-box {
@@ -324,6 +318,14 @@
 		text-align: center;
 	}
 
+	.no-after {
+		margin: 3rem auto 0;
+		font-family: 'Kurale', serif;
+		font-size: clamp(1rem, 1.1vw, 1.35rem);
+		line-height: 1.95;
+		text-align: center;
+	}
+
 	.tags-block {
 		position: relative;
 		padding: 0.75rem 1rem;
@@ -336,21 +338,10 @@
 		margin-bottom: auto;
 	}
 
-	.space-section {
-		padding: 0;
-	}
-
-	.space-grid {
-		display: flex;
-		flex-direction: column;
-		gap: 6rem;
-		overflow: visible;
-	}
-
 	.space-card {
 		display: grid;
 		grid-template-columns: 98px 1fr;
-		gap: 4rem;
+		gap: 14rem;
 		align-items: stretch;
 		max-width: 860px;
 		margin: 0 auto;
@@ -385,17 +376,11 @@
 		left: 0;
 		width: 98px;
 		height: 82px;
-		border: 2px solid #413f3f;
+		border: 2px solid #57585A;
 		border-bottom: none;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-	}
-
-	.space-diamond {
-		width: 14px;
-		height: 14px;
-		transform: rotate(-45deg);
 	}
 
 	.space-kanji-img {
@@ -415,7 +400,7 @@
 		left: 0;
 		width: 98px;
 		height: 151px;
-		border: 2px solid #413f3f;
+		border: 2px solid #57585A;
 		border-top: none;
 		display: flex;
 		align-items: center;
@@ -465,7 +450,7 @@
 		animation: heroContentFade 0.5s ease-out 1.6s both;
 		width: 42px;
 		height: 164px;
-		border: 2px solid #413f3f;
+		border: 2px solid #57585A;
 		background: transparent;
 		color: #474747;
 		font-family: 'Noto Sans JP', sans-serif;
@@ -480,7 +465,7 @@
 	}
 
 	.start-button:hover {
-		background: #413f3f;
+		background: #57585A;
 		color: #f5f0e8;
 	}
 
@@ -501,7 +486,7 @@
 		animation: heroContentFade 0.5s ease-out 1.6s both;
 		width: 42px;
 		height: 164px;
-		border: 2px solid #413f3f;
+		border: 2px solid #57585A;
 		background: transparent;
 		color: #474747;
 		font-family: 'Noto Sans JP', sans-serif;
@@ -517,7 +502,7 @@
 	}
 
 	.kofi-button:hover {
-		background: #413f3f;
+		background: #57585A;
 		color: #f5f0e8;
 	}
 
@@ -531,11 +516,6 @@
 	}
 
 	@media (max-width: 980px) {
-		.hero {
-			min-height: auto;
-			padding: 4rem 0 2rem;
-		}
-
 		.hero-meta {
 			left: 1rem;
 		}
@@ -553,12 +533,6 @@
 			text-align: center;
 		}
 
-		.space-panel {
-			flex-direction: row;
-			justify-content: center;
-			gap: 0.75rem;
-		}
-
 		.space-label {
 			writing-mode: horizontal-tb;
 			letter-spacing: 0.22em;
@@ -566,7 +540,7 @@
 	}
 
 	@media (max-width: 640px) {
-		.landing-page { padding: 1.5rem 1rem 2.5rem; }
+		.slide { padding: 3rem 1rem 4rem; }
 
 		.start-button {
 			position: static;
@@ -574,7 +548,7 @@
 			width: 120px;
 			height: 36px;
 			font-size: 16px;
-			margin: 5rem auto 0;
+			margin: 2.5rem auto 0;
 			order: 2;
 		}
 
@@ -591,7 +565,7 @@
 			width: 120px;
 			height: 36px;
 			font-size: 16px;
-			margin: 0 auto 5rem;
+			margin: 0 auto 2.5rem;
 			order: 0;
 		}
 
@@ -600,13 +574,6 @@
 			text-orientation: mixed;
 			letter-spacing: 0.3em;
 			padding-top: 0;
-		}
-
-		.hero {
-			margin-bottom: 4rem;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
 		}
 
 		.hero-block {
@@ -619,11 +586,7 @@
 			font-size: clamp(2rem, 13vw, 3rem);
 		}
 
-		.content { gap: 4rem; }
-
 		.section-heading { margin-bottom: 2rem; }
-
-		.space-grid { gap: 4rem; }
 
 		.space-card,
 		.space-card.even {
@@ -648,7 +611,7 @@
 			position: static;
 			width: 56px;
 			height: 88px;
-			border: 2px solid #413f3f;
+			border: 2px solid #57585A;
 			border-right: none;
 			flex-shrink: 0;
 		}
@@ -667,7 +630,7 @@
 			position: static;
 			flex: 1;
 			height: 88px;
-			border: 2px solid #413f3f;
+			border: 2px solid #57585A;
 			border-left: none;
 		}
 
