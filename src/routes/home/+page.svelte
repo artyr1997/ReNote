@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import type { Note, Space } from '$lib/db';
-	import { db, SPACES } from '$lib/db';
+	import { SPACES } from '$lib/db';
+	import { store, getNoteStats, isDesktop } from '$lib/store';
 	import SpaceIcon from '$lib/SpaceIcon.svelte';
 
 	let { data } = $props();
@@ -54,19 +55,14 @@
 	let exportSpaceCounts: Record<string, number> = $state({});
 
 	async function openExportConfirm() {
-		exportNoteCount = await db.notes.count();
-		const spacesData = await db.spaces.toArray();
-		const counts: Record<string, number> = {};
-		for (const s of spacesData) {
-			counts[s.english] = await db.notes.where('spaceId').equals(s.id!).count();
-		}
-		exportSpaceCounts = counts;
+		const stats = await getNoteStats();
+		exportNoteCount = stats.total;
+		exportSpaceCounts = stats.bySpace;
 		showExportConfirm = true;
 	}
 
 	async function exportNotes() {
-		const notes = await db.notes.toArray();
-		const spacesData = await db.spaces.toArray();
+		const [notes, spacesData] = await Promise.all([store.getNotes(), store.getSpaces()]);
 
 		const exportData = {
 			version: 1,
@@ -83,14 +79,9 @@
 			}),
 		};
 
-		const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = `renote-backup-${new Date().toISOString().slice(0, 10)}.json`;
-		a.click();
-		URL.revokeObjectURL(url);
-		showExportConfirm = false;
+		const fileName = `renote-backup-${new Date().toISOString().slice(0, 10)}.json`;
+		const saved = await store.saveExport(JSON.stringify(exportData, null, 2), fileName);
+		if (saved) showExportConfirm = false;
 	}
 
 	let fileInput: HTMLInputElement;
@@ -142,7 +133,7 @@
 			const parsed = JSON.parse(text);
 			if (!parsed.notes || !Array.isArray(parsed.notes)) return;
 
-			const spacesData = await db.spaces.toArray();
+			const spacesData = await store.getSpaces();
 
 			const notesToAdd = parsed.notes.map((n: any) => {
 				const space = spacesData.find(s => s.element === n.spaceElement) ?? spacesData[0];
@@ -155,7 +146,8 @@
 				};
 			});
 
-			await db.notes.bulkAdd(notesToAdd);
+			await store.addNotes(notesToAdd);
+			await invalidateAll();
 		} finally {
 			fileInput.value = '';
 		}
@@ -259,26 +251,48 @@
 	<!-- Background -->
 	<div class="background" aria-hidden="true"></div>
 
-	<!-- EXIT -->
-	<a href="/" class="exit">EXIT</a>
+	<!-- top left: NEW note on desktop; EXIT back to the landing on the web (the desktop app has no landing) -->
+	{#if isDesktop}
+		<a href="/new" class="exit wide-only" title="New note">NEW</a>
+	{:else}
+		<a href="/" class="exit wide-only">EXIT</a>
+	{/if}
 
 	<!-- IMP -->
 	<input bind:this={fileInput} type="file" accept=".json" onchange={importNotes} class="file-input" />
-	<button class="imp" onclick={() => fileInput.click()} title="Import">IMP</button>
+	<button class="imp wide-only" onclick={() => fileInput.click()} title="Import">IMP</button>
 
 	<!-- EXP -->
-	<button class="exp" onclick={openExportConfirm} title="Export">EXP</button>
+	<button class="exp wide-only" onclick={openExportConfirm} title="Export">EXP</button>
+
+	<!-- a small window: NEW and EXP in the corners, the four spaces in a row -->
+	{#if isDesktop}
+		<a href="/new" class="compact-btn top-right" title="New note">NEW</a>
+	{/if}
+	<button class="compact-btn bottom-right" onclick={openExportConfirm} title="Export">EXP</button>
+	<div class="compact-spaces">
+		{#each spaces as space, i}
+			<button
+				class="compact-space"
+				onclick={() => goto(`/space/${space.element}`)}
+				title="{space.english} ({shortcutKeys[space.element]}) — {noteCounts[space.id!] ?? 0} notes"
+			>
+				<img src="/kanji/{space.element}.png" alt={space.kanji} draggable="false" />
+				<span class="compact-label"><SpaceIcon element={space.element} size={12} />{positions[i].label.text}</span>
+			</button>
+		{/each}
+	</div>
 
 	{#each spaces as space, i}
 		{@const pos = positions[i]}
-		<div class="bottom-box" style="left: {pos.bottomBox.left}; top: {pos.bottomBox.top}; width: {pos.bottomBox.width}; height: {pos.bottomBox.height};">
+		<div class="bottom-box wide-only" style="left: {pos.bottomBox.left}; top: {pos.bottomBox.top}; width: {pos.bottomBox.width}; height: {pos.bottomBox.height};">
 			<p class="label">{pos.label.text}</p>
 		</div>
-		<div class="top-box" style="left: {pos.topBox.left}; top: {pos.topBox.top}; width: {pos.topBox.width}; height: {pos.topBox.height};">
+		<div class="top-box wide-only" style="left: {pos.topBox.left}; top: {pos.topBox.top}; width: {pos.topBox.width}; height: {pos.topBox.height};">
 			<SpaceIcon element={space.element} size={20} />
 		</div>
 		<img
-			class="kanji-image"
+			class="kanji-image wide-only"
 			style="left: {pos.image.left}; top: {pos.image.top}; width: {pos.image.size}; height: {pos.image.size};"
 			src="/kanji/{space.element}.png"
 			alt="{space.kanji}"
@@ -308,7 +322,7 @@
 		top: calc(6.25% + 1px);
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 20px;
-		color: #474747;
+		color: var(--text);
 		text-decoration: none;
 		writing-mode: vertical-rl;
 		text-orientation: upright;
@@ -319,14 +333,14 @@
 	.edit,
 	.info {
 		position: absolute;
-		border: 2px solid #57585A;
+		border: 2px solid var(--line);
 		width: 42px;
 		height: 164px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		text-decoration: none;
-		color: #474747;
+		color: var(--text);
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 20px;
 		transition: background 200ms ease, color 200ms ease;
@@ -334,8 +348,8 @@
 
 	.edit:hover,
 	.info:hover {
-		background: #57585A;
-		color: #f5f0e8;
+		background: var(--line);
+		color: var(--bg);
 	}
 
 	.edit {
@@ -356,7 +370,7 @@
 	.bottom-box,
 	.top-box {
 		position: absolute;
-		border: 2px solid #57585A;
+		border: 2px solid var(--line);
 		border-top: none;
 		border-bottom: none;
 		display: flex;
@@ -365,17 +379,17 @@
 	}
 
 	.bottom-box {
-		border-bottom: 2px solid #57585A;
+		border-bottom: 2px solid var(--line);
 	}
 
 	.top-box {
-		border-top: 2px solid #57585A;
+		border-top: 2px solid var(--line);
 	}
 
 	.label {
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 20px;
-		color: #474747;
+		color: var(--text);
 		margin: 0;
 		writing-mode: vertical-rl;
 		text-orientation: upright;
@@ -410,7 +424,7 @@
 	/* Search across all notes, top center */
 	.home-search {
 		position: absolute;
-		top: calc(6.25% + 1px);
+		top: 30px;
 		left: 50%;
 		transform: translateX(-50%);
 		width: 360px;
@@ -427,12 +441,12 @@
 		font-size: 24px;
 		line-height: 32px;
 		text-align: center;
-		color: #474747;
+		color: var(--text);
 		padding: 0;
 	}
 
 	.home-search-input::placeholder {
-		color: #57585A;
+		color: var(--line);
 		opacity: 0.4;
 	}
 
@@ -440,7 +454,7 @@
 		margin-top: 1rem;
 		padding: 1.25rem 1.5rem;
 		background: var(--bg) url('/noise.svg') repeat;
-		border: 2px solid #57585A;
+		border: 2px solid var(--line);
 		display: flex;
 		flex-direction: column;
 		gap: 0.75rem;
@@ -453,7 +467,7 @@
 		background: transparent;
 		border: none;
 		padding: 0;
-		color: #57585A;
+		color: var(--line);
 		font-family: 'Kurale', serif;
 		font-size: 16px;
 		line-height: 1.2;
@@ -477,7 +491,7 @@
 	.home-search-empty {
 		font-family: 'Kurale', serif;
 		font-size: 16px;
-		color: #57585A;
+		color: var(--line);
 		opacity: 0.4;
 		text-align: center;
 	}
@@ -487,7 +501,7 @@
 		position: absolute;
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 20px;
-		color: #474747;
+		color: var(--text);
 		writing-mode: vertical-rl;
 		text-orientation: upright;
 		letter-spacing: 0.64em;
@@ -523,7 +537,7 @@
 		left: 50%;
 		transform: translate(-50%, -50%);
 		background: var(--bg) url('/noise.svg') repeat;
-		border: 2px solid #57585A;
+		border: 2px solid var(--line);
 		padding: 2.5rem 3rem;
 		display: flex;
 		flex-direction: column;
@@ -537,14 +551,14 @@
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 18px;
 		letter-spacing: 0.4em;
-		color: #474747;
+		color: var(--text);
 		margin: 0;
 	}
 
 	.exp-divider {
 		width: 100%;
 		height: 1px;
-		background: #57585A;
+		background: var(--line);
 		opacity: 0.3;
 	}
 
@@ -559,7 +573,7 @@
 	.exp-total {
 		font-family: 'Kurale', serif;
 		font-size: 32px;
-		color: #474747;
+		color: var(--text);
 		margin: 0;
 		letter-spacing: 0.05em;
 	}
@@ -581,23 +595,23 @@
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 13px;
 		letter-spacing: 0.2em;
-		color: #474747;
+		color: var(--text);
 		flex: 1;
 	}
 
 	.exp-space-count {
 		font-family: 'Kurale', serif;
 		font-size: 18px;
-		color: #474747;
+		color: var(--text);
 		opacity: 0.6;
 	}
 
 	.exp-confirm-btn {
 		background: transparent;
-		border: 2px solid #57585A;
+		border: 2px solid var(--line);
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 16px;
-		color: #474747;
+		color: var(--text);
 		letter-spacing: 0.3em;
 		padding: 0.5rem 2rem;
 		cursor: pointer;
@@ -605,46 +619,96 @@
 	}
 
 	.exp-confirm-btn:hover {
-		background: #57585A;
-		color: #f5f0e8;
+		background: var(--line);
+		color: var(--bg);
+	}
+
+	/* ── a small desktop window: the four spaces side by side ── */
+	.compact-spaces { display: none; }
+
+	@media (max-width: 759px), (max-height: 559px) {
+		:global(html.desktop) .compact-spaces {
+			position: absolute;
+			inset: 64px 24px 44px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 4vw;
+		}
+
+		.compact-space {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 12px;
+			background: transparent;
+			border: none;
+			padding: 0;
+			cursor: pointer;
+			opacity: 0.8;
+			transition: opacity 0.3s;
+		}
+
+		.compact-space:hover { opacity: 1; }
+
+		.compact-space img {
+			width: min(17vw, 34vh);
+			height: min(17vw, 34vh);
+			object-fit: contain;
+		}
+
+		.compact-label {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			font-family: 'Noto Sans JP', sans-serif;
+			font-size: 12px;
+			letter-spacing: 0.3em;
+			color: var(--text);
+		}
+
+		:global(html.desktop) .home-search { top: 14px; }
+		:global(html.desktop) .home-search-input { font-size: 18px; transition: opacity 200ms ease; }
+		/* only in the window in use, while nothing is typed in it */
+		:global(html.desktop.blurred) .home-search-input:placeholder-shown { opacity: 0; pointer-events: none; }
 	}
 
 	@media (max-width: 640px) {
-		.exit, .imp, .exp { font-size: 16px; }
+		:global(html:not(.desktop)) .exit, :global(html:not(.desktop)) .imp, :global(html:not(.desktop)) .exp { font-size: 16px; }
 
-		.info {
+		:global(html:not(.desktop)) .info {
 			width: 36px;
 			height: 120px;
 			font-size: 16px;
 		}
 
-		.edit {
+		:global(html:not(.desktop)) .edit {
 			width: 36px;
 			height: 120px;
 			font-size: 16px;
 		}
 
-		.home { display: block; }
+		:global(html:not(.desktop)) .home { display: block; }
 
 		/* Kanji – 2×2: ліва центр 32vw, права центр 68vw (±18vw від 50vw) */
-		.kanji-image:nth-of-type(1) { left: 16vw !important; top: 17vh !important; width: 32vw !important; height: 32vw !important; }
-		.kanji-image:nth-of-type(2) { left: 52vw !important; top: 17vh !important; width: 32vw !important; height: 32vw !important; }
-		.kanji-image:nth-of-type(3) { left: 16vw !important; top: 58vh !important; width: 32vw !important; height: 32vw !important; }
-		.kanji-image:nth-of-type(4) { left: 52vw !important; top: 58vh !important; width: 32vw !important; height: 32vw !important; }
+		:global(html:not(.desktop)) .kanji-image:nth-of-type(1) { left: 16vw !important; top: 17vh !important; width: 32vw !important; height: 32vw !important; }
+		:global(html:not(.desktop)) .kanji-image:nth-of-type(2) { left: 52vw !important; top: 17vh !important; width: 32vw !important; height: 32vw !important; }
+		:global(html:not(.desktop)) .kanji-image:nth-of-type(3) { left: 16vw !important; top: 58vh !important; width: 32vw !important; height: 32vw !important; }
+		:global(html:not(.desktop)) .kanji-image:nth-of-type(4) { left: 52vw !important; top: 58vh !important; width: 32vw !important; height: 32vw !important; }
 
 		/* Top-boxes */
-		.home > :nth-child(1 of .top-box) { left: 20vw !important; top: calc(17vh - 78px) !important; width: 24vw !important; height: 70px !important; }
-		.home > :nth-child(2 of .top-box) { left: 56vw !important; top: calc(17vh - 78px) !important; width: 24vw !important; height: 70px !important; }
-		.home > :nth-child(3 of .top-box) { left: 20vw !important; top: calc(58vh - 78px) !important; width: 24vw !important; height: 70px !important; }
-		.home > :nth-child(4 of .top-box) { left: 56vw !important; top: calc(58vh - 78px) !important; width: 24vw !important; height: 70px !important; }
+		:global(html:not(.desktop)) .home > :nth-child(1 of .top-box) { left: 20vw !important; top: calc(17vh - 78px) !important; width: 24vw !important; height: 70px !important; }
+		:global(html:not(.desktop)) .home > :nth-child(2 of .top-box) { left: 56vw !important; top: calc(17vh - 78px) !important; width: 24vw !important; height: 70px !important; }
+		:global(html:not(.desktop)) .home > :nth-child(3 of .top-box) { left: 20vw !important; top: calc(58vh - 78px) !important; width: 24vw !important; height: 70px !important; }
+		:global(html:not(.desktop)) .home > :nth-child(4 of .top-box) { left: 56vw !important; top: calc(58vh - 78px) !important; width: 24vw !important; height: 70px !important; }
 
 		/* Bottom-boxes */
-		.home > :nth-child(1 of .bottom-box) { left: 20vw !important; top: calc(17vh + 32vw + 8px) !important; width: 24vw !important; height: 130px !important; }
-		.home > :nth-child(2 of .bottom-box) { left: 56vw !important; top: calc(17vh + 32vw + 8px) !important; width: 24vw !important; height: 130px !important; }
-		.home > :nth-child(3 of .bottom-box) { left: 20vw !important; top: calc(58vh + 32vw + 8px) !important; width: 24vw !important; height: 130px !important; }
-		.home > :nth-child(4 of .bottom-box) { left: 56vw !important; top: calc(58vh + 32vw + 8px) !important; width: 24vw !important; height: 130px !important; }
+		:global(html:not(.desktop)) .home > :nth-child(1 of .bottom-box) { left: 20vw !important; top: calc(17vh + 32vw + 8px) !important; width: 24vw !important; height: 130px !important; }
+		:global(html:not(.desktop)) .home > :nth-child(2 of .bottom-box) { left: 56vw !important; top: calc(17vh + 32vw + 8px) !important; width: 24vw !important; height: 130px !important; }
+		:global(html:not(.desktop)) .home > :nth-child(3 of .bottom-box) { left: 20vw !important; top: calc(58vh + 32vw + 8px) !important; width: 24vw !important; height: 130px !important; }
+		:global(html:not(.desktop)) .home > :nth-child(4 of .bottom-box) { left: 56vw !important; top: calc(58vh + 32vw + 8px) !important; width: 24vw !important; height: 130px !important; }
 
-		.label {
+		:global(html:not(.desktop)) .label {
 			writing-mode: vertical-rl;
 			text-orientation: upright;
 			font-size: 18px;

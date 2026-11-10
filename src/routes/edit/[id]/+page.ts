@@ -6,11 +6,11 @@ export const ssr = false;
 export async function load({ params }) {
 	if (!browser) return { note: null, space: null };
 
-	const { db } = await import('$lib/db');
+	const { store, getSpace } = await import('$lib/store');
 	const id = parseInt(params.id);
-	const note = await db.notes.get(id);
+	const note = await store.getNote(id);
 	if (!note) throw error(404, 'Note not found');
 
-	const space = await db.spaces.get(note.spaceId);
+	const space = await getSpace(note.spaceId);
 	return { note, space };
 }

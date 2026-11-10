@@ -2,7 +2,8 @@
 	import { onDestroy, tick } from 'svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { Note, Space } from '$lib/db';
-	import { db, SPACES, TITLE_MAX } from '$lib/db';
+	import { SPACES, TITLE_MAX } from '$lib/db';
+	import { store } from '$lib/store';
 	import SpaceIcon from '$lib/SpaceIcon.svelte';
 	import NoteEditor from '$lib/NoteEditor.svelte';
 	import { scrollFade } from '$lib/scrollFade';
@@ -59,7 +60,7 @@
 		// keep the loaded list in sync so switching back shows the saved text
 		const loaded = notes.find(n => n.id === id);
 		if (loaded) Object.assign(loaded, changes);
-		await db.notes.update(id, changes);
+		await store.updateNote(id, changes);
 	}
 
 	// autosave: never lose a pending change when leaving the page or closing the tab
@@ -91,7 +92,7 @@
 	async function deleteNote() {
 		if (!activeNote?.id) return;
 		if (saveTimeout) clearTimeout(saveTimeout);
-		await db.notes.delete(activeNote.id);
+		await store.deleteNote(activeNote.id);
 		activeNote = null;
 		noteTitle = '';
 		noteBody = '';
@@ -219,7 +220,14 @@
 {/if}
 
 <main class="screen space-screen fade-in">
-	<a class="nav-home" href="/home">HOME</a>
+	<a class="nav-home wide-only" href="/home">HOME</a>
+
+	<!-- a small window: the list and the note side by side, HOME and NEW in the corners -->
+	<a class="compact-btn top-right" href="/home" title="Home (Esc)">HOME</a>
+	<a class="compact-btn bottom-right" href="/new?space={space?.element}" title="New note (N)">NEW</a>
+	{#if space}
+		<p class="compact-title">{space.kanji} / {space.english.toUpperCase()}</p>
+	{/if}
 
 	{#if showSaved}
 		<div class="saved-toast">
@@ -228,17 +236,17 @@
 	{/if}
 
 	{#if activeNote}
-		<button class="nav-corner nav-del" onclick={() => showDeleteConfirm = true} title="Delete (Backspace)">DEL</button>
-		<a class="nav-corner nav-full" href="/note/{activeNote.id}">FULL</a>
+		<button class="nav-corner nav-del wide-only" onclick={() => showDeleteConfirm = true} title="Delete (Backspace)">DEL</button>
+		<a class="nav-corner nav-full wide-only" href="/note/{activeNote.id}">FULL</a>
 	{/if}
 
 	<!-- NEXT left-center: go to the next space -->
-	<button class="nav-button nav-next" onclick={() => switchSpace(1)} title="Next space (→)">
+	<button class="nav-button nav-next wide-only" onclick={() => switchSpace(1)} title="Next space (→)">
 		<p>NEXT</p>
 	</button>
 
 	<!-- NEW right-center (notes are autosaved, so no SAVE button) -->
-	<a class="nav-button nav-new" href="/new?space={space?.element}" title="New note (N)">
+	<a class="nav-button nav-new wide-only" href="/new?space={space?.element}" title="New note (N)">
 		<p>NEW</p>
 	</a>
 
@@ -326,7 +334,7 @@
 		position: absolute;
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 20px;
-		color: #474747;
+		color: var(--text);
 		text-decoration: none;
 		writing-mode: vertical-rl;
 		text-orientation: upright;
@@ -343,7 +351,7 @@
 	.nav-button {
 		width: 42px;
 		height: 164px;
-		border: 2px solid #57585A;
+		border: 2px solid var(--line);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -356,8 +364,8 @@
 	}
 
 	.nav-button:hover {
-		background: #57585A;
-		color: #f5f0e8;
+		background: var(--line);
+		color: var(--bg);
 	}
 
 	.nav-next {
@@ -380,7 +388,7 @@
 		position: absolute;
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 20px;
-		color: #474747;
+		color: var(--text);
 		text-decoration: none;
 		writing-mode: vertical-rl;
 		text-orientation: upright;
@@ -496,7 +504,7 @@
 		font-size: 20px;
 		letter-spacing: 0.32em;
 		margin-right: -0.32em;
-		color: #474747;
+		color: var(--text);
 		white-space: nowrap;
 	}
 
@@ -515,14 +523,14 @@
 		font-size: 24px;
 		line-height: 32px;
 		text-align: center;
-		color: #57585A;
+		color: var(--line);
 		padding: 0;
 		outline: none;
 		opacity: 0.8;
 	}
 
 	.search-input::placeholder {
-		color: #57585A;
+		color: var(--line);
 		opacity: 0.4;
 	}
 
@@ -550,7 +558,7 @@
 		background: transparent;
 		border: none;
 		padding: 0;
-		color: #57585A;
+		color: var(--line);
 		font-family: 'Kurale', serif;
 		font-size: 16px;
 		line-height: 1.2;
@@ -568,7 +576,7 @@
 	.empty {
 		font-family: 'Kurale', serif;
 		font-size: 16px;
-		color: #57585A;
+		color: var(--line);
 		opacity: 0.4;
 	}
 
@@ -597,7 +605,7 @@
 		font-family: 'Kurale', serif;
 		font-size: 16px;
 		line-height: 1.8;
-		color: #474747;
+		color: var(--text);
 		/* room for highlight strokes that start/end at the line edge */
 		padding: 0 0.5em;
 		overflow-y: auto;
@@ -617,12 +625,12 @@
 		line-height: 32px;
 		letter-spacing: 0.05em;
 		text-align: center;
-		color: #474747;
+		color: var(--text);
 		padding: 0;
 	}
 
 	.title-input::placeholder {
-		color: #57585A;
+		color: var(--line);
 		opacity: 0.25;
 		font-style: italic;
 	}
@@ -642,7 +650,7 @@
 		left: 50%;
 		transform: translate(-50%, -50%);
 		background: var(--bg) url('/noise.svg') repeat;
-		border: 2px solid #57585A;
+		border: 2px solid var(--line);
 		padding: 2.5rem 3rem;
 		display: flex;
 		flex-direction: column;
@@ -654,7 +662,7 @@
 	.confirm-text {
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 16px;
-		color: #474747;
+		color: var(--text);
 		letter-spacing: 0.2em;
 		margin: 0;
 	}
@@ -666,17 +674,17 @@
 
 	.confirm-btn {
 		background: transparent;
-		border: 2px solid #57585A;
+		border: 2px solid var(--line);
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 16px;
-		color: #474747;
+		color: var(--text);
 		letter-spacing: 0.2em;
 		padding: 0.4rem 1.2rem;
 		cursor: pointer;
 		transition: background 200ms ease, color 200ms ease;
 	}
 
-	.confirm-btn:hover { background: #57585A; color: #f5f0e8; }
+	.confirm-btn:hover { background: var(--line); color: var(--bg); }
 
 	.saved-toast {
 		position: fixed;
@@ -685,7 +693,7 @@
 		transform: translateX(-50%);
 		width: 42px;
 		height: 200px;
-		border: 2px solid #57585A;
+		border: 2px solid var(--line);
 		border-top: none;
 		padding-top: 1.5rem;
 		padding-bottom: 1.5rem;
@@ -699,7 +707,7 @@
 	.saved-toast span {
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 20px;
-		color: #474747;
+		color: var(--text);
 		writing-mode: vertical-rl;
 		text-orientation: upright;
 		letter-spacing: 0.64em;
@@ -711,16 +719,76 @@
 		to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 	}
 
-	@media (max-width: 640px) {
-		.nav-home, .nav-corner { font-size: 16px; }
+	/* ── a small desktop window: no element shape, the list and the note side by side ── */
+	.compact-title { display: none; }
 
-		.nav-button {
+	@media (max-width: 759px), (max-height: 559px) {
+		:global(html.desktop) .compact-title {
+			display: block;
+			position: absolute;
+			top: 16px;
+			left: 50%;
+			transform: translateX(-50%);
+			font-family: 'Noto Sans JP', sans-serif;
+			font-size: 12px;
+			letter-spacing: 0.3em;
+			color: var(--text);
+			opacity: 0.6;
+			white-space: nowrap;
+		}
+
+		:global(html.desktop) .kanji-block { display: none; }
+
+		:global(html.desktop) .left-column {
+			top: 48px;
+			bottom: 44px;
+			left: 36px;
+			width: 34%;
+			padding-top: 0;
+			gap: 1rem;
+		}
+
+		:global(html.desktop) .right-column {
+			top: 48px;
+			bottom: 44px;
+			left: calc(36px + 34% + 12px);
+			right: 24px;
+			width: auto;
+		}
+
+		/* the search lines up with the titles under it */
+		:global(html.desktop) .search-input {
+			padding: 0 0.5em;
+			font-size: 18px;
+			text-align: left;
+		}
+
+		:global(html.desktop) .notes-list {
+			width: 100%;
+			margin-left: 0;
+		}
+
+		:global(html.desktop) .title-input {
+			font-size: 18px;
+			line-height: 24px;
+		}
+
+		:global(html.desktop) .quote-card :global(.note-textarea) {
+			top: 40px;
+			height: calc(100% - 40px);
+		}
+	}
+
+	@media (max-width: 640px) {
+		:global(html:not(.desktop)) .nav-home, :global(html:not(.desktop)) .nav-corner { font-size: 16px; }
+
+		:global(html:not(.desktop)) .nav-button {
 			width: 36px;
 			height: 120px;
 			font-size: 16px;
 		}
 
-		.space-screen {
+		:global(html:not(.desktop)) .space-screen {
 			display: flex;
 			flex-direction: column;
 			min-height: 100vh;
@@ -728,14 +796,14 @@
 			padding: 0 calc(6.25% + 50px) 2rem;
 		}
 
-		.left-column, .right-column {
+		:global(html:not(.desktop)) .left-column, :global(html:not(.desktop)) .right-column {
 			position: static;
 			width: 100%;
 			height: auto;
 			gap: 1rem;
 		}
 
-		.kanji-block {
+		:global(html:not(.desktop)) .kanji-block {
 			position: static;
 			order: -1;
 			width: 100%;
@@ -746,13 +814,13 @@
 			justify-content: center;
 		}
 
-		.right-column { order: 0; margin-top: 1rem; }
-		.left-column { order: 1; margin-top: 3rem; padding-top: 0; }
-		.space-kanji-img { display: none; }
-		.kanji-shape { width: auto; height: auto; margin-top: 0 !important; }
-		.kanji-shape :global(.space-icon) { display: none; }
-		.kanji-char, .kanji-slash { display: inline; }
-		.kanji-name {
+		:global(html:not(.desktop)) .right-column { order: 0; margin-top: 1rem; }
+		:global(html:not(.desktop)) .left-column { order: 1; margin-top: 3rem; padding-top: 0; }
+		:global(html:not(.desktop)) .space-kanji-img { display: none; }
+		:global(html:not(.desktop)) .kanji-shape { width: auto; height: auto; margin-top: 0 !important; }
+		:global(html:not(.desktop)) .kanji-shape :global(.space-icon) { display: none; }
+		:global(html:not(.desktop)) .kanji-char, :global(html:not(.desktop)) .kanji-slash { display: inline; }
+		:global(html:not(.desktop)) .kanji-name {
 			position: static;
 			font-size: 22px;
 			letter-spacing: 0.1em;
@@ -760,19 +828,19 @@
 			width: 100%;
 		}
 
-		.notes-list { max-height: 30vh; width: 100%; margin-left: 0; }
+		:global(html:not(.desktop)) .notes-list { max-height: 30vh; width: 100%; margin-left: 0; }
 
-		.right-column { padding-bottom: 1.5rem; }
-		.quote-card { height: 40vh; min-height: 260px; }
+		:global(html:not(.desktop)) .right-column { padding-bottom: 1.5rem; }
+		:global(html:not(.desktop)) .quote-card { height: 40vh; min-height: 260px; }
 
-		.saved-toast {
+		:global(html:not(.desktop)) .saved-toast {
 			width: auto;
 			min-width: 140px;
 			height: 42px;
 			border: none;
 			padding: 0 1.5rem;
 		}
-		.saved-toast span {
+		:global(html:not(.desktop)) .saved-toast span {
 			writing-mode: horizontal-tb;
 			letter-spacing: 0.3em;
 		}

@@ -3,7 +3,8 @@
 	import NoteEditor from '$lib/NoteEditor.svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { db, TITLE_MAX } from '$lib/db';
+	import { TITLE_MAX } from '$lib/db';
+	import { store } from '$lib/store';
 	import type { Space } from '$lib/db';
 
 	let { data } = $props();
@@ -50,9 +51,9 @@
 			};
 			if (noteId === null) {
 				if (!force && !fields.title && !fields.body) return; // nothing typed yet
-				noteId = await db.notes.add({ ...fields, createdAt: now });
+				noteId = await store.addNote({ ...fields, createdAt: now });
 			} else {
-				await db.notes.update(noteId, fields);
+				await store.updateNote(noteId, fields);
 			}
 		});
 		return saving;
@@ -126,14 +127,18 @@
 {/if}
 
 <!-- BACK left-center -->
-<button class="nav-btn nav-back" onclick={back} title="Back (Esc)">
+<button class="nav-btn nav-back wide-only" onclick={back} title="Back (Esc)">
 	<p>BACK</p>
 </button>
 
 <!-- NEW right-center: start another note (this one is autosaved) -->
-<button class="nav-btn nav-new" onclick={newNote} title="New note">
+<button class="nav-btn nav-new wide-only" onclick={newNote} title="New note">
 	<p>NEW</p>
 </button>
+
+<!-- a small window: the note takes it all, BACK and NEW in the corners -->
+<button class="compact-btn bottom-left" onclick={back} title="Back (Esc)">BACK</button>
+<button class="compact-btn top-right" onclick={newNote} title="New note">NEW</button>
 
 <main class="new-screen fade-in">
 	<div class="input-block">
@@ -179,12 +184,12 @@
 		position: fixed;
 		width: 42px;
 		height: 164px;
-		border: 2px solid #57585A;
+		border: 2px solid var(--line);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		background: transparent;
-		color: #474747;
+		color: var(--text);
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 20px;
 		cursor: pointer;
@@ -193,8 +198,8 @@
 	}
 
 	.nav-btn:hover {
-		background: #57585A;
-		color: #f5f0e8;
+		background: var(--line);
+		color: var(--bg);
 	}
 
 	.nav-btn p {
@@ -230,12 +235,13 @@
 
 	.input-block :global(.body-input) {
 		position: absolute;
-		top: 56px;
+		/* the fade zone reaches close to the title and the arrows (both sit 30px from the window edge) */
+		top: calc(77px - 6.25vh);
 		left: 40px;
 		right: 40px;
-		bottom: 72px;
+		bottom: calc(85px - 6.25vh);
 		width: calc(100% - 80px);
-		height: calc(100% - 128px);
+		height: auto;
 		background: transparent;
 		border: none;
 		resize: none;
@@ -243,7 +249,7 @@
 		font-family: 'Kurale', serif;
 		font-size: 18px;
 		line-height: 1.85;
-		color: #474747;
+		color: var(--text);
 		/* room for highlight strokes that start/end at the line edge */
 		padding: 0 0.5em;
 		overflow-y: auto;
@@ -251,7 +257,8 @@
 
 	.title-input {
 		position: absolute;
-		top: 0;
+		/* 30px from the window top: the column itself starts at 6.25% + 1px */
+		top: calc(29px - 6.25vh);
 		left: 40px;
 		right: 40px;
 		width: calc(100% - 80px);
@@ -263,12 +270,12 @@
 		line-height: 32px;
 		letter-spacing: 0.05em;
 		text-align: center;
-		color: #474747;
+		color: var(--text);
 		padding: 0;
 	}
 
 	.title-input::placeholder {
-		color: #57585A;
+		color: var(--line);
 		opacity: 0.25;
 		font-style: italic;
 	}
@@ -276,7 +283,8 @@
 	/* Element selector */
 	.element-selector {
 		position: absolute;
-		bottom: 0;
+		/* 30px from the window bottom, like the title from the top */
+		bottom: calc(29px - 6.25vh);
 		left: 50%;
 		transform: translateX(-50%);
 		display: flex;
@@ -290,7 +298,7 @@
 		cursor: pointer;
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 2rem;
-		color: #474747;
+		color: var(--text);
 		padding: 0.5rem;
 		line-height: 1;
 	}
@@ -313,7 +321,7 @@
 		transform: translateX(-50%);
 		width: 42px;
 		height: 200px;
-		border: 2px solid #57585A;
+		border: 2px solid var(--line);
 		border-top: none;
 		padding-top: 1.5rem;
 		padding-bottom: 1.5rem;
@@ -327,7 +335,7 @@
 	.saved-toast span {
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 20px;
-		color: #474747;
+		color: var(--text);
 		writing-mode: vertical-rl;
 		text-orientation: upright;
 		letter-spacing: 0.64em;
@@ -339,17 +347,47 @@
 		to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 	}
 
+	/* ── a small desktop window: the note fills it, title and spaces closer to the edges ── */
+	@media (max-width: 759px), (max-height: 559px) {
+		:global(html.desktop) .input-block {
+			top: 0;
+			bottom: 0;
+			left: 24px;
+			right: 24px;
+		}
+
+		:global(html.desktop) .title-input {
+			top: 12px;
+			font-size: 18px;
+			line-height: 24px;
+		}
+
+		:global(html.desktop) .input-block :global(.body-input) {
+			top: 52px;
+			bottom: 52px;
+			font-size: 16px;
+		}
+
+		:global(html.desktop) .element-selector { bottom: 6px; }
+
+		:global(html.desktop) .el-nav-btn { font-size: 1.5rem; }
+	}
+
 	@media (max-width: 640px) {
-		.new-screen { overflow: visible; }
+		:global(html:not(.desktop)) .title-input { top: 0; }
+		:global(html:not(.desktop)) .element-selector { bottom: 0; }
+		:global(html:not(.desktop)) .input-block :global(.body-input) { top: 56px; bottom: 72px; }
+
+		:global(html:not(.desktop)) .new-screen { overflow: visible; }
 
 
-		.nav-btn {
+		:global(html:not(.desktop)) .nav-btn {
 			width: 36px;
 			height: 120px;
 			font-size: 16px;
 		}
 
-		.saved-toast {
+		:global(html:not(.desktop)) .saved-toast {
 			width: auto;
 			min-width: 140px;
 			height: 42px;
@@ -357,7 +395,7 @@
 			padding: 0 1.5rem;
 		}
 
-		.saved-toast span {
+		:global(html:not(.desktop)) .saved-toast span {
 			writing-mode: horizontal-tb;
 			letter-spacing: 0.3em;
 		}

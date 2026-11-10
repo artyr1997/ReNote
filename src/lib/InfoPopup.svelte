@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { db, SPACES } from './db';
+	import { SPACES } from './db';
+	import { getNoteStats } from './store';
 	import SpaceIcon from './SpaceIcon.svelte';
 
 	let open = $state(false);
@@ -7,13 +8,9 @@
 	let spaceCounts: Record<string, number> = $state({});
 
 	async function loadStats() {
-		noteCount = await db.notes.count();
-		const spaces = await db.spaces.toArray();
-		const counts: Record<string, number> = {};
-		for (const s of spaces) {
-			counts[s.english] = await db.notes.where('spaceId').equals(s.id!).count();
-		}
-		spaceCounts = counts;
+		const stats = await getNoteStats();
+		noteCount = stats.total;
+		spaceCounts = stats.bySpace;
 	}
 
 	function toggle() {
@@ -45,7 +42,8 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<button class="info-btn" onclick={toggle}>INFO</button>
+<button class="info-btn wide-only" onclick={toggle}>INFO</button>
+<button class="compact-btn bottom-left" onclick={toggle}>INFO</button>
 
 {#if open}
 	<div class="info-overlay" onclick={toggle} aria-hidden="true"></div>
@@ -85,7 +83,7 @@
 		bottom: calc(6.25% + 1px);
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 20px;
-		color: #474747;
+		color: var(--text);
 		writing-mode: vertical-rl;
 		text-orientation: upright;
 		letter-spacing: 0.64em;
@@ -112,7 +110,7 @@
 		transform: translate(-50%, -50%);
 		/* same paper background as the app */
 		background: var(--bg) url('/noise.svg') repeat;
-		border: 2px solid #57585A;
+		border: 2px solid var(--line);
 		padding: 2.5rem 3rem;
 		display: flex;
 		flex-direction: column;
@@ -128,14 +126,14 @@
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 18px;
 		letter-spacing: 0.4em;
-		color: #474747;
+		color: var(--text);
 		margin: 0;
 	}
 
 	.info-divider {
 		width: 100%;
 		height: 1px;
-		background: #57585A;
+		background: var(--line);
 		opacity: 0.3;
 	}
 
@@ -150,7 +148,7 @@
 	.info-total {
 		font-family: 'Kurale', serif;
 		font-size: 32px;
-		color: #474747;
+		color: var(--text);
 		margin: 0;
 		letter-spacing: 0.05em;
 	}
@@ -172,14 +170,14 @@
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 13px;
 		letter-spacing: 0.2em;
-		color: #474747;
+		color: var(--text);
 		flex: 1;
 	}
 
 	.info-space-count {
 		font-family: 'Kurale', serif;
 		font-size: 18px;
-		color: #474747;
+		color: var(--text);
 		opacity: 0.6;
 	}
 
@@ -201,7 +199,7 @@
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 11px;
 		letter-spacing: 0.05em;
-		color: #474747;
+		color: var(--text);
 		opacity: 0.6;
 		white-space: nowrap;
 	}
@@ -209,21 +207,21 @@
 	.shortcut-desc {
 		font-family: 'Kurale', serif;
 		font-size: 14px;
-		color: #474747;
+		color: var(--text);
 		text-align: right;
 	}
 
 	.info-footer {
 		font-family: 'Kurale', serif;
 		font-size: 13px;
-		color: #474747;
+		color: var(--text);
 		opacity: 0.4;
 		letter-spacing: 0.1em;
 		margin: 0;
 	}
 
 	@media (max-width: 640px) {
-		.info-btn{
+		:global(html:not(.desktop)) .info-btn{
 			font-size: 16px;
 		}
 	}

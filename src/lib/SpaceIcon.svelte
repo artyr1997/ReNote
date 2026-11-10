@@ -6,7 +6,8 @@
 		strokeWidth = 1.5,
 	}: { element: string; filled?: boolean; size?: number; strokeWidth?: number } = $props();
 
-	const stroke = '#57585A';
+	// the line colour (--line) arrives as currentColor: SVG attributes take no var()
+	const stroke = 'currentColor';
 
 	let fill = $derived(filled ? stroke : 'none');
 </script>
@@ -40,6 +41,7 @@
 	.space-icon {
 		display: block;
 		flex-shrink: 0;
+		color: var(--line);
 		transition: fill 200ms ease;
 	}
 </style>

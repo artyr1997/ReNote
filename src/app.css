@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=Kurale&display=swap');
+/* fonts are bundled (see +layout.svelte) so the app works offline, incl. the desktop build */
 
 :root {
 	--bg: #F4F4F4;
@@ -6,6 +6,7 @@
 	--accent: #474747;
 	--border: #474747;
 	--border-mid: #474747;
+	--line: #57585A;
 }
 
 *,
@@ -23,7 +24,7 @@ img,
 label,
 select,
 [onclick] {
-	cursor: url('/kanji/hand.svg'), pointer;
+	cursor: pointer;
 } */
 
 /* Hide scrollbars everywhere; scrolling still works */
@@ -90,7 +91,7 @@ textarea:focus::placeholder {
 
 input,
 textarea {
-	cursor: url('/kanji/ibeam.svg') 10 10, text;
+	cursor: text;
 }
 
 html,
@@ -101,7 +102,7 @@ body {
 	color: var(--text);
 	font-family: 'Noto Sans JP', sans-serif;
 	-webkit-font-smoothing: antialiased;
-	cursor: url('/kanji/cursor.svg'), crosshair;
+	cursor: default;
 }
 
 /* ── Global frame corners ── */
@@ -358,3 +359,182 @@ body {
 	text-align: center;
 	display: block;
 }
+/* ── Small desktop window (like ReSound's mini player): the vertical buttons
+   give way to a few small ones in the corners; the window controls keep the top left.
+   Desktop only: the website keeps its own phone layout. ── */
+/* ── The side buttons as in the other Re apps (ReFile, ReSurf…): the same places, letter spacing
+   and greys. Desktop only: the website keeps its own. html.desktop outranks the pages' scoped rules. ── */
+html.desktop :is(.exit, .nav-home) { left: calc(6.25% - 28px); top: calc(6.25% + 8px); }
+html.desktop :is(.imp, .nav-del) { right: calc(6.25% - 28px); top: calc(6.25% + 8px); }
+html.desktop .info-btn { left: calc(6.25% - 28px); bottom: 6.25%; }
+html.desktop :is(.exp, .nav-full) { right: calc(6.25% - 28px); bottom: 6.25%; }
+html.desktop :is(.nav-next, .nav-back, .nav-info, .kofi-button) { left: calc(6.25% - 28px); }
+html.desktop :is(.nav-new, .nav-edit, .edit, .start-button) { right: calc(6.25% - 28px); }
+
+/* plain ones: a little faint until pointed at */
+html.desktop :is(.exit, .nav-home, .imp, .nav-del, .info-btn, .exp, .nav-full) {
+	opacity: 0.75;
+	transition: opacity 200ms ease;
+}
+
+html.desktop :is(.exit, .nav-home, .imp, .nav-del, .info-btn, .exp, .nav-full):hover {
+	opacity: 1;
+}
+
+html.desktop :is(.exit, .nav-home, .imp, .info-btn, .exp, .nav-corner),
+html.desktop .nav-button,
+html.desktop :is(.nav-button p, .nav-btn p, .start-button span, .kofi-button span, .edit span) {
+	letter-spacing: 0.6em;
+}
+
+html.desktop :is(.start-button span, .kofi-button span, .edit span) {
+	padding-top: 0.6em;
+}
+
+/* plain ones are centred where a box would be (42px), as ReFile's .side.plain */
+html.desktop :is(.exit, .nav-home, .imp, .nav-del, .info-btn, .exp, .nav-full) {
+	width: 42px;
+	display: flex;
+	align-items: center;
+}
+
+/* the top ones start a little lower, level with the others' (.side.switch) first letters */
+html.desktop :is(.exit, .nav-home, .imp, .nav-del) {
+	padding-top: 0.55em;
+}
+
+/* boxed ones as ReFile's .side.boxed: 164px, a short word in the middle (the trailing letter space
+   is the bottom padding's share) */
+html.desktop :is(.nav-button, .nav-btn, .nav-edit, .nav-info) {
+	height: auto;
+	min-height: 164px;
+	padding: 18px 0 calc(18px - 0.6em);
+	font-size: 20px;
+}
+
+html.desktop :is(.nav-button p, .nav-btn p, .nav-edit, .nav-info) {
+	writing-mode: vertical-rl;
+	text-orientation: upright;
+	letter-spacing: 0.6em;
+	line-height: 32px;
+}
+
+html.desktop :is(.nav-button p, .nav-btn p) {
+	padding-top: 0;
+}
+
+/* boxed ones fill with the ink when pointed at */
+html.desktop :is(.nav-button, .nav-btn, .nav-info, .start-button, .kofi-button, .edit):hover {
+	background: var(--text);
+	border-color: var(--text);
+	color: var(--bg);
+}
+
+.compact-btn {
+	display: none;
+}
+
+@media (max-width: 759px), (max-height: 559px) {
+	html.desktop .wide-only {
+		display: none !important;
+	}
+
+	html.desktop .compact-btn {
+		display: block;
+		position: fixed;
+		z-index: 50;
+		background: transparent;
+		border: none;
+		padding: 0.3em 0.4em;
+		font-family: 'Noto Sans JP', sans-serif;
+		font-size: 12px;
+		letter-spacing: 0.3em;
+		color: var(--text);
+		text-decoration: none;
+		opacity: 0.6;
+		cursor: pointer;
+		transition: opacity 200ms ease;
+	}
+
+	html.desktop .compact-btn:hover {
+		opacity: 1;
+	}
+
+	html.desktop .compact-btn.top-right { top: 12px; right: 12px; }
+	html.desktop .compact-btn.bottom-left { bottom: 12px; left: 12px; }
+	html.desktop .compact-btn.bottom-right { bottom: 12px; right: 12px; }
+
+	/* only in the window in use: in one behind, the corner buttons stay out of sight */
+	html.desktop.blurred .compact-btn {
+		opacity: 0 !important;
+		pointer-events: none;
+	}
+}
+
+
+/* ── Dark, when the Mac is (or the website's visitor picks it): the same paper at night. Its grain is light, so over the dark it is
+   multiplied in (darker specks) instead of laid on (a haze); the ink turns light. ── */
+:root {
+	color-scheme: light dark;
+	--light-off: #c9c9c9;
+	/* the window's rim (body::after) */
+	--rim: rgba(0, 0, 0, 0.12);
+	--error: #b04a45;
+}
+
+/* data-theme is the Mac's appearance (see app.html), or the one picked on the website */
+:root[data-theme='dark'] {
+	color-scheme: dark;
+	--bg: #1d1d1d;
+	--text: #808080;
+	--line: #747474;
+	--muted: #747474;
+	--light-off: #4a4a4a;
+	/* at night no rim at all, in use or not */
+	--rim: transparent;
+	--error: #e07a72;
+	--accent: #808080;
+	--border: #808080;
+	--border-mid: #808080;
+}
+
+:root[data-theme='light'] {
+	color-scheme: light;
+}
+
+/* the old look fades into the new one (app.html) */
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation-duration: 0.7s;
+	animation-timing-function: ease-in-out;
+}
+
+:root[data-theme='dark'] * {
+	background-blend-mode: multiply;
+}
+
+:root[data-theme='dark'] :is(.ink-mark, .note-editor mark) {
+	background:
+		url('/kanji/dark/brush-left.svg') left center / auto 100% no-repeat,
+		url('/kanji/dark/brush-right.svg') right center / auto 100% no-repeat,
+		url('/kanji/dark/brush-mid.svg') 0.65em center / calc(100% - 1.3em) 100% no-repeat;
+	background-blend-mode: normal;
+}
+
+/* the kanji are black ink on clear: light ink at night */
+:root[data-theme='dark'] img[src^='/kanji/'] {
+	filter: invert(0.5);
+}
+
+/* A thin rim around the window, as macOS drew before the title bar went (lib.rs): the window's own
+   corners, over everything, never in the way of the mouse. */
+html.desktop body::after {
+	content: '';
+	position: fixed;
+	inset: 0;
+	border: 1px solid var(--rim);
+	border-radius: 12px;
+	pointer-events: none;
+	z-index: 2147483647;
+}
+

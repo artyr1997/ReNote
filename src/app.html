@@ -2,10 +2,33 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" href="%sveltekit.assets%/favicon.svg" type="image/svg+xml" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.png" type="image/png" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<meta name="description" content="Renote — just notes." />
-		<title>Renote</title>
+		<meta name="description" content="ReSpace — quiet apps for the Mac. Just what you need." />
+		<title>ReSpace</title>
+		<script>
+			// light or dark as the Mac is, unless the website's visitor picked one (+page.svelte);
+			// when it turns, the old look fades into the new one
+			(function () {
+				var root = document.documentElement;
+				var system = matchMedia('(prefers-color-scheme: dark)');
+				function theme() {
+					var picked = null;
+					try { picked = localStorage.getItem('theme'); } catch (e) {}
+					return picked || (system.matches ? 'dark' : 'light');
+				}
+				root.dataset.theme = theme();
+				window.setTheme = function (next) {
+					if (root.dataset.theme === next) return;
+					var apply = function () {
+						root.dataset.theme = next;
+						dispatchEvent(new Event('themechange'));
+					};
+					document.startViewTransition && !document.hidden ? document.startViewTransition(apply) : apply();
+				};
+				system.addEventListener('change', function () { window.setTheme(theme()); });
+			})();
+		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover" spellcheck="false">

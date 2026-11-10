@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { db } from '$lib/db';
+	import { store } from '$lib/store';
 	import { scrollFade } from '$lib/scrollFade';
 
 	let { data } = $props();
@@ -27,7 +27,7 @@
 
 	async function save() {
 		if (!note?.id) return;
-		await db.notes.update(note.id, {
+		await store.updateNote(note.id, {
 			body: body.trim(),
 			updatedAt: Date.now(),
 		});
@@ -132,7 +132,7 @@
 	.corner::after {
 		content: '';
 		position: absolute;
-		background: #57585A;
+		background: var(--line);
 	}
 
 	.corner::before {
@@ -179,7 +179,7 @@
 		top: calc(6.25% + 1px);
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 20px;
-		color: #474747;
+		color: var(--text);
 		text-decoration: none;
 		writing-mode: vertical-rl;
 		text-orientation: upright;
@@ -195,13 +195,13 @@
 		position: absolute;
 		width: 42px;
 		height: 137px;
-		border: 2px solid #57585A;
+		border: 2px solid var(--line);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
 		text-decoration: none;
-		color: #474747;
+		color: var(--text);
 		font-family: 'Noto Sans JP', sans-serif;
 		font-size: 20px;
 		background: transparent;
@@ -285,7 +285,7 @@
 		font-family: 'Noto Sans JP', sans-serif;
 		font-weight: 350;
 		font-size: 36px;
-		color: #57585A;
+		color: var(--line);
 		text-align: center;
 		letter-spacing: 0.08em;
 		margin: 0;

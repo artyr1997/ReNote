@@ -5,9 +5,8 @@ export const ssr = false;
 export async function load() {
 	if (!browser) return { spaces: [], noteCounts: {}, notes: [] };
 
-	const { db } = await import('$lib/db');
-	const spaces = await db.spaces.toArray();
-	const notes  = (await db.notes.toArray()).sort((a, b) => b.updatedAt - a.updatedAt);
+	const { store } = await import('$lib/store');
+	const [spaces, notes] = await Promise.all([store.getSpaces(), store.getNotes()]);
 
 	const noteCounts: Record<number, number> = {};
 	for (const note of notes) {

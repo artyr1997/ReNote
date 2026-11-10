@@ -273,12 +273,12 @@
 		overflow-wrap: break-word;
 		overflow-y: auto;
 		outline: none;
-		cursor: url('/kanji/ibeam.svg') 10 10, text;
+		cursor: text;
 	}
 
 	.note-editor[data-empty]::before {
 		content: attr(data-placeholder);
-		color: #57585A;
+		color: var(--line);
 		opacity: 0.25;
 		font-style: italic;
 		pointer-events: none;
