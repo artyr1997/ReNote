@@ -48,10 +48,10 @@ export const SPACES: Omit<Space, 'id'>[] = [
 	},
 	{
 		element: 'air',
-		kanji: '風',
+		kanji: '気',
 		english: 'Soul',
 		color: '#00CFB0',
-		description: '風 / Soul. The quiet layer beneath everything else. Not what you do, but who you are when nothing is required. This is where meaning lives. Where you process, remember, and feel. Invisible, but essential.',
+		description: '気 / Soul. The quiet layer beneath everything else. Not what you do, but who you are when nothing is required. This is where meaning lives. Where you process, remember, and feel. Invisible, but essential.',
 		types: ['Journal', 'Emotions', 'Reflection', 'Dreams', 'Memories', 'Values', 'Letters'],
 	},
 ];
@@ -76,6 +76,19 @@ class ReNoteDB extends Dexie {
 					space.color = seed.color;
 					space.kanji = seed.kanji;
 					space.english = seed.english;
+				}
+			});
+		});
+		// air's kanji: 風 became 気 (with its picture)
+		this.version(3).stores({
+			notes: '++id, spaceId, title, body, createdAt, updatedAt',
+			spaces: '++id, element, kanji, english, color',
+		}).upgrade(tx => {
+			return tx.table('spaces').toCollection().modify((space: Space) => {
+				const seed = SPACES.find(s => s.element === space.element);
+				if (seed) {
+					space.kanji = seed.kanji;
+					space.description = seed.description;
 				}
 			});
 		});
