@@ -28,16 +28,16 @@
 			kanji: '箱',
 			line: 'Just your files.',
 			description:
-				'箱 / File. Every file is something you once decided to keep. Folders as columns or as a list, a search that stays in the folder you are in. Pictures and text open right where they are, and text can be written in place. Music goes where music belongs: to ReSound.',
-			tags: ['Columns', 'List', 'Search', 'Images', 'Text editing', 'Trash', 'Music to ReSound'],
+				'箱 / File. Every file is something you once decided to keep. Folders as columns or as a list, a search that stays in the folder you are in. Pictures and text open right where they are, and text can be written in place. Music goes where music belongs: to RePlay.',
+			tags: ['Columns', 'List', 'Search', 'Images', 'Text editing', 'Trash', 'Music to RePlay'],
 		},
 		{
-			name: 'ReSound',
-			word: 'Hear',
+			name: 'RePlay',
+			word: 'Play',
 			kanji: '音',
 			line: 'Just music.',
 			description:
-				'音 / Hear. Music you own, played the way it was made: from start to end, without a feed deciding what comes next. ReSound reads your music folder and nothing else. Albums, artists, songs, your own lists. Play, queue, shuffle, repeat. The rest is silence between the tracks.',
+				'音 / Play. Music you own, played the way it was made: from start to end, without a feed deciding what comes next. RePlay reads your music folder and nothing else. Albums, artists, songs, your own lists. Play, queue, shuffle, repeat. The rest is silence between the tracks.',
 			tags: ['Albums', 'Artists', 'Songs', 'Playlists', 'Queue', 'Shuffle', 'FLAC', 'ALAC'],
 		},
 		{
