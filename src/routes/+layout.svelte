@@ -20,6 +20,16 @@
 		Promise.race([document.fonts.ready, new Promise((done) => setTimeout(done, 300))])
 			.then(() => import('@tauri-apps/api/core'))
 			.then(({ invoke }) => invoke('window_ready'));
+		// ⌘N: another window (src-tauri/src/lib.rs, new_window), before the pages' own keys (N: a new note)
+		const newWindow = (e: KeyboardEvent) => {
+			if (e.metaKey && !e.shiftKey && !e.altKey && !e.ctrlKey && e.code === 'KeyN') {
+				e.preventDefault();
+				e.stopImmediatePropagation();
+				import('@tauri-apps/api/core').then(({ invoke }) => invoke('new_window'));
+			}
+		};
+		window.addEventListener('keydown', newWindow, true);
+		return () => window.removeEventListener('keydown', newWindow, true);
 	});
 
 	// no INFO on the landing and on the note editors (full note, new note).

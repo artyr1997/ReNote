@@ -25,6 +25,7 @@
 	}
 
 	const shortcuts = [
+		{ key: '⌘ + N', desc: 'New window' },
 		{ key: 'Ctrl/⌘ + S', desc: 'Save' },
 		{ key: 'Ctrl/⌘ + B', desc: 'Highlight selected text' },
 		{ key: 'Esc', desc: 'Back / Close' },
