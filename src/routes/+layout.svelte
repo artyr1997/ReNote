@@ -20,12 +20,17 @@
 		Promise.race([document.fonts.ready, new Promise((done) => setTimeout(done, 300))])
 			.then(() => import('@tauri-apps/api/core'))
 			.then(({ invoke }) => invoke('window_ready'));
-		// ⌘N: another window (src-tauri/src/lib.rs, new_window), before the pages' own keys (N: a new note)
+		// ⌘N: another window (src-tauri/src/lib.rs, new_window), ⌘W: this one closes; before the pages' own keys (N: a new note)
 		const newWindow = (e: KeyboardEvent) => {
 			if (e.metaKey && !e.shiftKey && !e.altKey && !e.ctrlKey && e.code === 'KeyN') {
 				e.preventDefault();
 				e.stopImmediatePropagation();
 				import('@tauri-apps/api/core').then(({ invoke }) => invoke('new_window'));
+			} else if (e.metaKey && !e.shiftKey && !e.altKey && !e.ctrlKey && e.code === 'KeyW') {
+				// ⌘W: this window closes (it fades out: lib.rs, fade_on_close)
+				e.preventDefault();
+				e.stopImmediatePropagation();
+				import('@tauri-apps/api/window').then(({ getCurrentWindow }) => getCurrentWindow().close());
 			}
 		};
 		window.addEventListener('keydown', newWindow, true);
