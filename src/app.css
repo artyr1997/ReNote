@@ -528,3 +528,13 @@ html.desktop :is(.nav-button, .nav-btn, .nav-info, .start-button, .kofi-button, 
 }
 
 
+
+/* the space switch under a note (← ⬠ →): only in the window in use */
+.element-selector {
+	transition: opacity 150ms ease;
+}
+
+html.desktop.blurred .element-selector {
+	opacity: 0;
+	pointer-events: none;
+}
