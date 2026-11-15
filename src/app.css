@@ -440,7 +440,8 @@ html.desktop :is(.nav-button, .nav-btn, .nav-info, .start-button, .kofi-button, 
 	}
 
 	html.desktop .compact-btn {
-		display: block;
+		/* a small window has no buttons: the keys only */
+		display: none !important;
 		position: fixed;
 		z-index: 50;
 		background: transparent;
