@@ -238,12 +238,12 @@
 
 	{#if activeNote}
 		<button class="nav-corner nav-del wide-only" onclick={() => showDeleteConfirm = true} title="Delete (Backspace)">{t('DEL')}</button>
-		<a class="nav-corner nav-full wide-only" href="/note/{activeNote.id}">{t('FULL')}</a>
+		<a class="nav-corner nav-full wide-only" href="/note/{activeNote.id}">{t('FULL', 'FULL NOTE')}</a>
 	{/if}
 
 	<!-- NEXT left-center: go to the next space -->
 	<button class="nav-button nav-next wide-only" onclick={() => switchSpace(1)} title="Next space (→)">
-		<p>{t('NEXT')}</p>
+		<p>{t('NEXT', 'NEXT SPACE')}</p>
 	</button>
 
 	<!-- NEW right-center (notes are autosaved, so no SAVE button) -->
