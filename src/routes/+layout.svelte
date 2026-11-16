@@ -6,6 +6,7 @@
 	import '../app.css';
 	import { onMount } from 'svelte';
 	import { followDeskLanguage } from '$lib/lang.svelte';
+	import { followDeskGlass } from '$lib/glass';
 	import { page } from '$app/stores';
 	import InfoPopup from '$lib/InfoPopup.svelte';
 	import WindowControls from '$lib/WindowControls.svelte';
@@ -19,6 +20,7 @@
 	onMount(() => {
 		// the side buttons in the desk's language (ReDesk › Settings › Language)
 		followDeskLanguage();
+		followDeskGlass();
 		if (!isDesktop) return;
 		Promise.race([document.fonts.ready, new Promise((done) => setTimeout(done, 300))])
 			.then(() => import('@tauri-apps/api/core'))
