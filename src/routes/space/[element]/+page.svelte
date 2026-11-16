@@ -227,7 +227,7 @@
 	<a class="compact-btn top-right" href="/home" title="Home (Esc)">HOME</a>
 	<a class="compact-btn bottom-right" href="/new?space={space?.element}" title="New note (N)">NEW</a>
 	{#if space}
-		<p class="compact-title">{space.kanji} / {space.english.toUpperCase()}</p>
+		<p class="compact-title">{space.english.toUpperCase()}</p>
 	{/if}
 
 	{#if showSaved}
@@ -256,12 +256,7 @@
 			<div class="kanji-shape {space.element}">
 				<SpaceIcon element={space.element} size={300} strokeWidth={2} />
 				<div class="kanji-inner">
-					<img
-						class="space-kanji-img"
-						src="/kanji/{space.element}.png"
-						alt={space.kanji}
-					/>
-					<p class="kanji-name"><span class="kanji-char">{space.kanji}</span><span class="kanji-slash"> / </span>{space.english.toUpperCase()}</p>
+					<p class="kanji-name">{space.english.toUpperCase()}</p>
 				</div>
 			</div>
 		</div>
@@ -493,12 +488,6 @@
 		gap: 12px;
 	}
 
-	.space-kanji-img {
-		width: 96px;
-		height: 96px;
-		object-fit: contain;
-		opacity: 0.8;
-	}
 
 	.kanji-name {
 		font-family: 'Noto Sans JP', sans-serif;
@@ -509,7 +498,6 @@
 		white-space: nowrap;
 	}
 
-	.kanji-char, .kanji-slash { display: none; }
 
 	.search-row {
 		width: 100%;
@@ -817,10 +805,8 @@
 
 		:global(html:not(.desktop)) .right-column { order: 0; margin-top: 1rem; }
 		:global(html:not(.desktop)) .left-column { order: 1; margin-top: 3rem; padding-top: 0; }
-		:global(html:not(.desktop)) .space-kanji-img { display: none; }
 		:global(html:not(.desktop)) .kanji-shape { width: auto; height: auto; margin-top: 0 !important; }
 		:global(html:not(.desktop)) .kanji-shape :global(.space-icon) { display: none; }
-		:global(html:not(.desktop)) .kanji-char, :global(html:not(.desktop)) .kanji-slash { display: inline; }
 		:global(html:not(.desktop)) .kanji-name {
 			position: static;
 			font-size: 22px;

@@ -7,37 +7,33 @@
 		{
 			name: 'ReNote',
 			word: 'Note',
-			kanji: '記',
 			line: 'Just notes.',
 			description:
-				'記 / Note. A thought needs a place to land, not a system to learn. Four spaces, as old as the elements: Feel for what you absorb, Body for what must be done, Mind for what is being born, Soul for who you are when nothing is required. Write, mark what matters with ink, and let it settle.',
+				'Note. A thought needs a place to land, not a system to learn. Four spaces, as old as the elements: Feel for what you absorb, Body for what must be done, Mind for what is being born, Soul for who you are when nothing is required. Write, mark what matters with ink, and let it settle.',
 			tags: ['Feel', 'Body', 'Mind', 'Soul', 'Ink highlights', 'Autosave', 'Import', 'Export'],
 		},
 		{
 			name: 'ReSurf',
 			word: 'Surf',
-			kanji: '波',
 			line: 'Just the page.',
 			description:
-				'波 / Surf. The web was meant to be read. Somewhere it became a place that reads you. ReSurf gives the page back: no ads, no trackers, no history kept. Favourites on the left, open tabs on the right, and in the middle only what you came for. A video can fill the page. A page can turn to quiet grey ink.',
+				'Surf. The web was meant to be read. Somewhere it became a place that reads you. ReSurf gives the page back: no ads, no trackers, no history kept. Favourites on the left, open tabs on the right, and in the middle only what you came for. A video can fill the page. A page can turn to quiet grey ink.',
 			tags: ['Tabs', 'Favourites', 'No ads', 'No tracking', 'No history', 'E-ink', 'Video fill'],
 		},
 		{
 			name: 'ReFile',
 			word: 'File',
-			kanji: '箱',
 			line: 'Just your files.',
 			description:
-				'箱 / File. Every file is something you once decided to keep. Folders as columns or as a list, a search that stays in the folder you are in. Pictures and text open right where they are, and text can be written in place. Music goes where music belongs: to RePlay.',
+				'File. Every file is something you once decided to keep. Folders as columns or as a list, a search that stays in the folder you are in. Pictures and text open right where they are, and text can be written in place. Music goes where music belongs: to RePlay.',
 			tags: ['Columns', 'List', 'Search', 'Images', 'Text editing', 'Trash', 'Music', 'Books'],
 		},
 		{
 			name: 'ReDesk',
 			word: 'Desk',
-			kanji: '机',
 			line: 'Just the desk.',
 			description:
-				'机 / Desk. The place where everything else is laid out. The apps as four words in the corners. The day as a line that fills from midnight to midnight, the battery as one that rises, sound as a soft wave. Wallpapers that move, ink that follows the light behind it, and windows that find their places on their own.',
+				'Desk. The place where everything else is laid out. The apps as four words in the corners. The day as a line that fills from midnight to midnight, the battery as one that rises, sound as a soft wave. Wallpapers that move, ink that follows the light behind it, and windows that find their places on their own.',
 			tags: ['Corners', 'Day line', 'Battery', 'Sound wave', 'Video wallpapers', 'Tiling', 'Light / Dark'],
 		},
 	];
@@ -144,7 +140,6 @@
 					<div class="app-top-box">
 						<span class="app-re">Re</span>
 					</div>
-					<span class="app-kanji">{app.kanji}</span>
 					<div class="app-bottom-box">
 						<p class="app-label">{app.word.toUpperCase()}</p>
 					</div>
@@ -486,7 +481,7 @@
 		order: 1;
 	}
 
-	/* the same boxed column as ReNote's spaces: a mark above, the word below, the kanji between */
+	/* the same boxed column as ReNote's spaces: a mark above, the word below */
 	.app-visual {
 		position: relative;
 		width: 98px;
@@ -514,17 +509,6 @@
 		letter-spacing: 0.04em;
 	}
 
-	.app-kanji {
-		position: absolute;
-		top: 40%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		font-family: 'Noto Sans JP', sans-serif;
-		font-weight: 300;
-		font-size: 128px;
-		line-height: 1;
-		opacity: 0.8;
-	}
 
 	.app-bottom-box {
 		position: absolute;
@@ -767,17 +751,6 @@
 			flex-shrink: 0;
 		}
 
-		.app-kanji {
-			position: static;
-			width: 88px;
-			height: 88px;
-			transform: none;
-			font-size: 56px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			flex-shrink: 0;
-		}
 
 		.app-bottom-box {
 			position: static;

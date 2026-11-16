@@ -278,7 +278,7 @@
 				onclick={() => goto(`/space/${space.element}`)}
 				title="{space.english} ({shortcutKeys[space.element]}) — {noteCounts[space.id!] ?? 0} notes"
 			>
-				<img src="/kanji/{space.element}.png" alt={space.kanji} draggable="false" />
+				<span class="compact-mark"><SpaceIcon element={space.element} strokeWidth={2} /></span>
 				<span class="compact-label"><SpaceIcon element={space.element} size={12} />{positions[i].label.text}</span>
 			</button>
 		{/each}
@@ -292,14 +292,15 @@
 		<div class="top-box wide-only" style="left: {pos.topBox.left}; top: {pos.topBox.top}; width: {pos.topBox.width}; height: {pos.topBox.height};">
 			<SpaceIcon element={space.element} size={20} />
 		</div>
-		<img
-			class="kanji-image wide-only"
+		<!-- the space as its shape (no kanji): a click opens it -->
+		<button
+			class="kanji-image wide-only s{i + 1}"
 			style="left: {pos.image.left}; top: {pos.image.top}; width: {pos.image.size}; height: {pos.image.size};"
-			src="/kanji/{space.element}.png"
-			alt="{space.kanji}"
 			onclick={() => goto(`/space/${space.element}`)}
 			title="{space.english} ({shortcutKeys[space.element]}) — {noteCounts[space.id!] ?? 0} notes"
-		/>
+		>
+			<SpaceIcon element={space.element} strokeWidth={2} />
+		</button>
 	{/each}
 </main>
 
@@ -403,6 +404,17 @@
 		opacity: 0.8;
 		cursor: pointer;
 		transition: opacity 0.3s;
+		background: transparent;
+		border: none;
+		padding: 18%;
+		color: var(--line);
+	}
+
+	/* the shape fills its place (SpaceIcon's own size is for small marks) */
+	.kanji-image :global(svg),
+	.compact-mark :global(svg) {
+		width: 100%;
+		height: 100%;
 	}
 
 	.kanji-image:hover {
@@ -652,10 +664,12 @@
 
 		.compact-space:hover { opacity: 1; }
 
-		.compact-space img {
+		.compact-mark {
+			display: block;
 			width: min(17vw, 34vh);
 			height: min(17vw, 34vh);
-			object-fit: contain;
+			padding: 18%;
+			color: var(--line);
 		}
 
 		.compact-label {
@@ -692,10 +706,10 @@
 		:global(html:not(.desktop)) .home { display: block; }
 
 		/* Kanji – 2×2: ліва центр 32vw, права центр 68vw (±18vw від 50vw) */
-		:global(html:not(.desktop)) .kanji-image:nth-of-type(1) { left: 16vw !important; top: 17vh !important; width: 32vw !important; height: 32vw !important; }
-		:global(html:not(.desktop)) .kanji-image:nth-of-type(2) { left: 52vw !important; top: 17vh !important; width: 32vw !important; height: 32vw !important; }
-		:global(html:not(.desktop)) .kanji-image:nth-of-type(3) { left: 16vw !important; top: 58vh !important; width: 32vw !important; height: 32vw !important; }
-		:global(html:not(.desktop)) .kanji-image:nth-of-type(4) { left: 52vw !important; top: 58vh !important; width: 32vw !important; height: 32vw !important; }
+		:global(html:not(.desktop)) .kanji-image.s1 { left: 16vw !important; top: 17vh !important; width: 32vw !important; height: 32vw !important; }
+		:global(html:not(.desktop)) .kanji-image.s2 { left: 52vw !important; top: 17vh !important; width: 32vw !important; height: 32vw !important; }
+		:global(html:not(.desktop)) .kanji-image.s3 { left: 16vw !important; top: 58vh !important; width: 32vw !important; height: 32vw !important; }
+		:global(html:not(.desktop)) .kanji-image.s4 { left: 52vw !important; top: 58vh !important; width: 32vw !important; height: 32vw !important; }
 
 		/* Top-boxes */
 		:global(html:not(.desktop)) .home > :nth-child(1 of .top-box) { left: 20vw !important; top: calc(17vh - 78px) !important; width: 24vw !important; height: 70px !important; }

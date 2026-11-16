@@ -522,13 +522,6 @@ html.desktop :is(.nav-button, .nav-btn, .nav-info, .start-button, .kofi-button, 
 	background-blend-mode: normal;
 }
 
-/* the kanji are black ink on clear: light ink at night */
-:root[data-theme='dark'] img[src^='/kanji/'] {
-	filter: invert(0.5);
-}
-
-
-
 /* the space switch under a note (← ⬠ →): only in the window in use */
 .element-selector {
 	transition: opacity 150ms ease;

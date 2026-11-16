@@ -140,7 +140,7 @@
 
 		<div class="element-selector">
 			<button class="el-nav-btn" onclick={prev} title="Previous space (Option/Alt+←)">←</button>
-			<div class="el-center" title="{selectedSpace.kanji} {selectedSpace.english}">
+			<div class="el-center" title={selectedSpace.english}>
 				<SpaceIcon element={selectedSpace.element} size={20} />
 			</div>
 			<button class="el-nav-btn" onclick={next} title="Next space (Option/Alt+→)">→</button>

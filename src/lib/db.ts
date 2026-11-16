@@ -27,7 +27,7 @@ export const SPACES: Omit<Space, 'id'>[] = [
 		kanji: '水',
 		english: 'Feel',
 		color: '#3FB5D3',
-		description: '水 / Feel.   Everything you absorb. Everything that stays. Knowledge does not arrive complete. It settles. Layer by layer. Thought by thought. Over time, it becomes clarity. This is where you keep what the world has already said so you can understand it on your own terms.',
+		description: 'Feel.   Everything you absorb. Everything that stays. Knowledge does not arrive complete. It settles. Layer by layer. Thought by thought. Over time, it becomes clarity. This is where you keep what the world has already said so you can understand it on your own terms.',
 		types: ['Summaries', 'Quotes', 'Facts', 'Instructions', 'Glossaries', 'Research', 'References'],
 	},
 	{
@@ -35,7 +35,7 @@ export const SPACES: Omit<Space, 'id'>[] = [
 		kanji: '土',
 		english: 'Body',
 		color: '#E6B422',
-		description: '土 / Body. Reality lives here. Things that require action, movement, decisions. Not ideas, but execution. This is the weight you carry every day. Plans that need structure. Tasks that need completion. Grounded. Practical. Unavoidable.',
+		description: 'Body. Reality lives here. Things that require action, movement, decisions. Not ideas, but execution. This is the weight you carry every day. Plans that need structure. Tasks that need completion. Grounded. Practical. Unavoidable.',
 		types: ['Tasks', 'Plans', 'Deadlines', 'Meetings', 'Goals', 'Priorities', 'Habits'],
 	},
 	{
@@ -43,7 +43,7 @@ export const SPACES: Omit<Space, 'id'>[] = [
 		kanji: '火',
 		english: 'Mind',
 		color: '#EA5550',
-		description: '火 / Mind. Before clarity, there is chaos. This is where thoughts are born. Unfinished. Unfiltered. Alive. Ideas do not need permission here. They do not need structure. Not yet. This is the space of creation where something begins without knowing what it will become.',
+		description: 'Mind. Before clarity, there is chaos. This is where thoughts are born. Unfinished. Unfiltered. Alive. Ideas do not need permission here. They do not need structure. Not yet. This is the space of creation where something begins without knowing what it will become.',
 		types: ['Ideas', 'Concepts', 'Hypotheses', 'Plots', 'Associations', 'Questions', 'Brainstorm'],
 	},
 	{
@@ -51,7 +51,7 @@ export const SPACES: Omit<Space, 'id'>[] = [
 		kanji: '気',
 		english: 'Soul',
 		color: '#00CFB0',
-		description: '気 / Soul. The quiet layer beneath everything else. Not what you do, but who you are when nothing is required. This is where meaning lives. Where you process, remember, and feel. Invisible, but essential.',
+		description: 'Soul. The quiet layer beneath everything else. Not what you do, but who you are when nothing is required. This is where meaning lives. Where you process, remember, and feel. Invisible, but essential.',
 		types: ['Journal', 'Emotions', 'Reflection', 'Dreams', 'Memories', 'Values', 'Letters'],
 	},
 ];
