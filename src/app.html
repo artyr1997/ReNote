@@ -26,7 +26,10 @@
 					};
 					document.startViewTransition && !document.hidden ? document.startViewTransition(apply) : apply();
 				};
-				system.addEventListener('change', function () { window.setTheme(theme()); });
+				system.addEventListener('change', function () {
+					// on glass the look stays as it is (lib/glass.ts)
+					if (!root.classList.contains('glass')) window.setTheme(theme());
+				});
 			})();
 		</script>
 		%sveltekit.head%
