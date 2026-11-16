@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/lang.svelte';
 	import { SPACES } from './db';
 	import { getNoteStats } from './store';
 	import SpaceIcon from './SpaceIcon.svelte';
@@ -43,7 +44,7 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<button class="info-btn wide-only" onclick={toggle}>INFO</button>
+<button class="info-btn wide-only" onclick={toggle}>{t('INFO')}</button>
 <button class="compact-btn bottom-left" onclick={toggle}>INFO</button>
 
 {#if open}

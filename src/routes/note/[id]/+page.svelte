@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/lang.svelte';
 	import SpaceIcon from '$lib/SpaceIcon.svelte';
 	import NoteEditor from '$lib/NoteEditor.svelte';
 	import { onDestroy, onMount } from 'svelte';
@@ -107,12 +108,12 @@
 
 <!-- BACK left-center -->
 <button class="nav-btn nav-back wide-only" onclick={back} title="Back (Esc)">
-	<p>BACK</p>
+	<p>{t('BACK')}</p>
 </button>
 
 <!-- NEW right-center (changes are autosaved) -->
 <a class="nav-btn nav-new wide-only" href="/new?space={selectedSpace.element}" title="New note">
-	<p>NEW</p>
+	<p>{t('NEW')}</p>
 </a>
 
 <!-- a small window: the note takes it all, BACK and NEW in the corners -->

@@ -5,6 +5,7 @@
 	import '@fontsource/noto-sans-jp/500.css';
 	import '../app.css';
 	import { onMount } from 'svelte';
+	import { followDeskLanguage } from '$lib/lang.svelte';
 	import { page } from '$app/stores';
 	import InfoPopup from '$lib/InfoPopup.svelte';
 	import WindowControls from '$lib/WindowControls.svelte';
@@ -16,6 +17,8 @@
 
 	// drawn, with its fonts (or not later than 300 ms): the desktop window fades in (it starts hidden)
 	onMount(() => {
+		// the side buttons in the desk's language (ReDesk › Settings › Language)
+		followDeskLanguage();
 		if (!isDesktop) return;
 		Promise.race([document.fonts.ready, new Promise((done) => setTimeout(done, 300))])
 			.then(() => import('@tauri-apps/api/core'))

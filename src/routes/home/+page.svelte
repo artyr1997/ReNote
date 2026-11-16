@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/lang.svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { Note, Space } from '$lib/db';
 	import { SPACES } from '$lib/db';
@@ -253,17 +254,17 @@
 
 	<!-- top left: NEW note on desktop; EXIT back to the landing on the web (the desktop app has no landing) -->
 	{#if isDesktop}
-		<a href="/new" class="exit wide-only" title="New note">NEW</a>
+		<a href="/new" class="exit wide-only" title="New note">{t('NEW')}</a>
 	{:else}
-		<a href="/" class="exit wide-only">EXIT</a>
+		<a href="/" class="exit wide-only">{t('EXIT')}</a>
 	{/if}
 
 	<!-- IMP -->
 	<input bind:this={fileInput} type="file" accept=".json" onchange={importNotes} class="file-input" />
-	<button class="imp wide-only" onclick={() => fileInput.click()} title="Import">IMP</button>
+	<button class="imp wide-only" onclick={() => fileInput.click()} title="Import">{t('IMP')}</button>
 
 	<!-- EXP -->
-	<button class="exp wide-only" onclick={openExportConfirm} title="Export">EXP</button>
+	<button class="exp wide-only" onclick={openExportConfirm} title="Export">{t('EXP')}</button>
 
 	<!-- a small window: NEW and EXP in the corners, the four spaces in a row -->
 	{#if isDesktop}

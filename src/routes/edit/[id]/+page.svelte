@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/lang.svelte';
 	import { goto } from '$app/navigation';
 	import { store } from '$lib/store';
 	import { scrollFade } from '$lib/scrollFade';
@@ -59,13 +60,13 @@
 </div>
 
 <!-- Left top nav: EXIT -->
-<button class="nav-home" onclick={exit} title="Exit (Esc)">EXIT</button>
+<button class="nav-home" onclick={exit} title="Exit (Esc)">{t('EXIT')}</button>
 
 <!-- Left action button: INFO -->
-<button class="nav-info" onclick={() => showInfo = !showInfo}>INFO</button>
+<button class="nav-info" onclick={() => showInfo = !showInfo}>{t('INFO')}</button>
 
 <!-- Right button: SAVE -->
-<button class="nav-edit" onclick={save} title="Save (Ctrl/⌘+S)">SAVE</button>
+<button class="nav-edit" onclick={save} title="Save (Ctrl/⌘+S)">{t('SAVE')}</button>
 
 <main class="screen edit-screen fade-in">
 	<h1 class="edit-title">EDIT</h1>

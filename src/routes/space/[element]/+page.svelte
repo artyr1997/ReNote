@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/lang.svelte';
 	import { onDestroy, tick } from 'svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { Note, Space } from '$lib/db';
@@ -220,7 +221,7 @@
 {/if}
 
 <main class="screen space-screen fade-in">
-	<a class="nav-home wide-only" href="/home">HOME</a>
+	<a class="nav-home wide-only" href="/home">{t('HOME')}</a>
 
 	<!-- a small window: the list and the note side by side, HOME and NEW in the corners -->
 	<a class="compact-btn top-right" href="/home" title="Home (Esc)">HOME</a>
@@ -236,18 +237,18 @@
 	{/if}
 
 	{#if activeNote}
-		<button class="nav-corner nav-del wide-only" onclick={() => showDeleteConfirm = true} title="Delete (Backspace)">DEL</button>
-		<a class="nav-corner nav-full wide-only" href="/note/{activeNote.id}">FULL</a>
+		<button class="nav-corner nav-del wide-only" onclick={() => showDeleteConfirm = true} title="Delete (Backspace)">{t('DEL')}</button>
+		<a class="nav-corner nav-full wide-only" href="/note/{activeNote.id}">{t('FULL')}</a>
 	{/if}
 
 	<!-- NEXT left-center: go to the next space -->
 	<button class="nav-button nav-next wide-only" onclick={() => switchSpace(1)} title="Next space (→)">
-		<p>NEXT</p>
+		<p>{t('NEXT')}</p>
 	</button>
 
 	<!-- NEW right-center (notes are autosaved, so no SAVE button) -->
 	<a class="nav-button nav-new wide-only" href="/new?space={space?.element}" title="New note (N)">
-		<p>NEW</p>
+		<p>{t('NEW')}</p>
 	</a>
 
 	{#if space}
