@@ -3,6 +3,11 @@
 	import '@fontsource/noto-sans-jp/300.css';
 	import '@fontsource/noto-sans-jp/400.css';
 	import '@fontsource/noto-sans-jp/500.css';
+	// glass's lettering (app.css)
+	import '@fontsource/m-plus-1p/300.css';
+	import '@fontsource/m-plus-1p/400.css';
+	import '@fontsource/m-plus-1p/500.css';
+	import '@fontsource/m-plus-1p/700.css';
 	import '../app.css';
 	import { onMount } from 'svelte';
 	import { followDeskLanguage } from '$lib/lang.svelte';
