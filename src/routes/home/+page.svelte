@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { t } from '$lib/lang.svelte';
+	import { t, tx } from '$lib/lang.svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { Note, Space } from '$lib/db';
 	import { SPACES } from '$lib/db';
@@ -229,10 +229,10 @@
 {#if showExportConfirm}
 	<div class="exp-overlay" onclick={() => showExportConfirm = false} aria-hidden="true"></div>
 	<div class="exp-box">
-		<p class="exp-heading">EXPORT</p>
+		<p class="exp-heading">{tx('EXPORT')}</p>
 		<div class="exp-divider"></div>
 		<div class="exp-stats">
-			<p class="exp-total">{exportNoteCount} {exportNoteCount === 1 ? 'note' : 'notes'}</p>
+			<p class="exp-total">{tx(exportNoteCount === 1 ? '{n} note' : '{n} notes', { n: exportNoteCount })}</p>
 			<div class="exp-spaces">
 				{#each SPACES as s}
 					<div class="exp-space-row">
@@ -244,7 +244,7 @@
 			</div>
 		</div>
 		<div class="exp-divider"></div>
-		<button class="exp-confirm-btn" onclick={exportNotes}>EXPORT</button>
+		<button class="exp-confirm-btn" onclick={exportNotes}>{tx('EXPORT')}</button>
 	</div>
 {/if}
 

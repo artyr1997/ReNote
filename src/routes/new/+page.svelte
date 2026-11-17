@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { t } from '$lib/lang.svelte';
+	import { t, tx } from '$lib/lang.svelte';
 	import SpaceIcon from '$lib/SpaceIcon.svelte';
 	import NoteEditor from '$lib/NoteEditor.svelte';
 	import { onDestroy, onMount } from 'svelte';
@@ -124,7 +124,7 @@
 <svelte:window onkeydown={handleKeydown} onpagehide={flushSave} />
 
 {#if showSaved}
-	<div class="saved-toast"><span>SAVED</span></div>
+	<div class="saved-toast"><span>{tx('SAVED')}</span></div>
 {/if}
 
 <!-- BACK left-center -->

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { t } from '$lib/lang.svelte';
+	import { t, tx } from '$lib/lang.svelte';
 	import { SPACES } from './db';
 	import { getNoteStats } from './store';
 	import SpaceIcon from './SpaceIcon.svelte';
@@ -53,7 +53,7 @@
 		<p class="info-heading">RE:NOTE</p>
 		<div class="info-divider"></div>
 		<div class="info-stats">
-			<p class="info-total">{noteCount} {noteCount === 1 ? 'note' : 'notes'}</p>
+			<p class="info-total">{tx(noteCount === 1 ? '{n} note' : '{n} notes', { n: noteCount })}</p>
 			<div class="info-spaces">
 				{#each SPACES as s}
 					<div class="info-space-row">
@@ -68,13 +68,13 @@
 		<div class="info-shortcuts">
 			{#each shortcuts as s}
 				<div class="shortcut-row">
-					<span class="shortcut-key">{s.key}</span>
-					<span class="shortcut-desc">{s.desc}</span>
+					<span class="shortcut-key">{tx(s.key)}</span>
+					<span class="shortcut-desc">{tx(s.desc)}</span>
 				</div>
 			{/each}
 		</div>
 		<div class="info-divider"></div>
-		<p class="info-footer">local · private · offline</p>
+		<p class="info-footer">{tx('local · private · offline')}</p>
 	</div>
 {/if}
 

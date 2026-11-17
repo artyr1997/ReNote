@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { t } from '$lib/lang.svelte';
+	import { t, tx } from '$lib/lang.svelte';
 	import { onDestroy, tick } from 'svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { Note, Space } from '$lib/db';
@@ -212,10 +212,10 @@
 {#if showDeleteConfirm}
 	<div class="confirm-overlay" onclick={() => showDeleteConfirm = false} aria-hidden="true"></div>
 	<div class="confirm-box">
-		<p class="confirm-text">Delete this note?</p>
+		<p class="confirm-text">{tx('Delete this note?')}</p>
 		<div class="confirm-actions">
-			<button class="confirm-btn confirm-yes" onclick={deleteNote}>YES</button>
-			<button class="confirm-btn confirm-no" onclick={() => showDeleteConfirm = false}>NO</button>
+			<button class="confirm-btn confirm-yes" onclick={deleteNote}>{tx('YES')}</button>
+			<button class="confirm-btn confirm-no" onclick={() => showDeleteConfirm = false}>{tx('NO')}</button>
 		</div>
 	</div>
 {/if}
@@ -232,7 +232,7 @@
 
 	{#if showSaved}
 		<div class="saved-toast">
-			<span>SAVED</span>
+			<span>{tx('SAVED')}</span>
 		</div>
 	{/if}
 

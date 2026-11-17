@@ -39,6 +39,31 @@ const japanese: Record<string, string> = {
 	'NEXT SPACE': '次の場所',
 };
 
+// the popups' words: headings, texts, their buttons, the keys they list
+const japaneseText: Record<string, string> = {
+	'{n} note': 'ノート {n}',
+	'{n} notes': 'ノート {n}',
+	'local · private · offline': 'ローカル · 非公開 · オフライン',
+	'EXPORT': '書き出し',
+	'Delete this note?': 'このノートを削除しますか？',
+	'YES': 'はい',
+	'NO': 'いいえ',
+	'SAVED': '保存しました',
+	'New window': '新しいウィンドウ',
+	'Save': '保存',
+	'Highlight selected text': '選んだ文字をハイライト',
+	'Back / Close': '戻る / 閉じる',
+	'Open Feel / Body / Mind / Soul': 'Feel / Body / Mind / Soul を開く',
+	'New note': '新しいノート',
+	'Edit note': 'ノートを編集',
+	'Search': '検索',
+	'Search / Full mode while editing': '検索 / 編集中は全画面',
+	'Navigate notes': 'ノートを移動',
+	'Switch space': 'スペースを切り替え',
+	'Switch space (new / full note)': 'スペースを切り替え（新規 / 全文で）',
+	'Delete note': 'ノートを削除',
+};
+
 export const language = $state({ japanese: false });
 
 // The language turning, as on a departures board: each letter runs through others (Latin and katakana)
@@ -61,6 +86,13 @@ export function t(word: string, as?: string): string {
 			return POOL[Math.abs(hash) % POOL.length];
 		})
 		.join('');
+}
+
+/** the popups' words (any length) in the desk's language; {name} in them is filled from `values` */
+export function tx(text: string, values?: Record<string, string | number>): string {
+	let out = language.japanese ? (japaneseText[text] ?? text) : text;
+	if (values) for (const [key, value] of Object.entries(values)) out = out.replaceAll(`{${key}}`, String(value));
+	return out;
 }
 
 let flapTimer: ReturnType<typeof setInterval> | null = null;
