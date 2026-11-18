@@ -447,7 +447,8 @@
 	}
 
 	/* a drawing between the words: a line of its own, as wide as the text, drawn on right there. No frame:
-	   its corners are marked with a thin +, as ReDesk marks the windows' (clearer while the pointer is over it) */
+	   while the pointer is over it (drawing on it), its corners are marked with a thin +, as ReDesk marks the
+	   windows'; else nothing but the drawing */
 	.note-editor :global(figure.drawing) {
 		position: relative;
 		display: block;
@@ -463,7 +464,7 @@
 		background:
 			linear-gradient(var(--line), var(--line)) center / 100% 1px no-repeat,
 			linear-gradient(var(--line), var(--line)) center / 1px 100% no-repeat;
-		opacity: 0.45;
+		opacity: 0;
 		pointer-events: none;
 		transition: opacity 200ms ease;
 	}
