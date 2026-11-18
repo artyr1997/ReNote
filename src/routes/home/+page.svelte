@@ -406,15 +406,19 @@
 		transition: opacity 0.3s;
 		background: transparent;
 		border: none;
-		padding: 18%;
+		padding: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		color: var(--line);
 	}
 
-	/* the shape fills its place (SpaceIcon's own size is for small marks) */
+	/* the shape in the middle of its place, 64 % of it (SpaceIcon's own size is for small marks). Not by
+	   padding: a padding in % is the window's width, which left no room for it at all */
 	.kanji-image :global(svg),
 	.compact-mark :global(svg) {
-		width: 100%;
-		height: 100%;
+		width: 64%;
+		height: 64%;
 	}
 
 	.kanji-image:hover {
@@ -668,7 +672,9 @@
 			display: block;
 			width: min(17vw, 34vh);
 			height: min(17vw, 34vh);
-			padding: 18%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
 			color: var(--line);
 		}
 
