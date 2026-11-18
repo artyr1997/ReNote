@@ -34,13 +34,16 @@
 
 	const attribute = (text: string) => escapeHtml(text).replace(/"/g, '&quot;');
 
+	/** a drawing's place marked at its corners with a +, as ReDesk marks the windows' */
+	const PLUSES = ['tl', 'tr', 'bl', 'br'].map((at) => `<i class="plus ${at}"></i>`).join('');
+
 	/** the words as they are written, the drawings as drawings */
 	function toHtml(text: string): string {
 		let out = '';
 		let last = 0;
 		for (const m of text.matchAll(DRAWING)) {
 			out += wordsHtml(text.slice(last, m.index));
-			out += `<figure class="drawing" contenteditable="false" data-drawing="${attribute(m[1])}"><canvas></canvas></figure>`;
+			out += `<figure class="drawing" contenteditable="false" data-drawing="${attribute(m[1])}"><canvas></canvas>${PLUSES}</figure>`;
 			last = m.index! + m[0].length;
 		}
 		return out + wordsHtml(text.slice(last));
@@ -443,19 +446,35 @@
 		opacity: 0.3;
 	}
 
-	/* a drawing between the words: a line of its own, as wide as the text, drawn on right there. Its place
-	   shows faintly while the pointer is over it (an empty one always), so it is found */
+	/* a drawing between the words: a line of its own, as wide as the text, drawn on right there. No frame:
+	   its corners are marked with a thin +, as ReDesk marks the windows' (clearer while the pointer is over it) */
 	.note-editor :global(figure.drawing) {
+		position: relative;
 		display: block;
-		margin: 0.6em 0;
+		margin: 0.9em 0;
 		user-select: none;
-		box-shadow: inset 0 0 0 1px transparent;
-		transition: box-shadow 200ms ease;
 	}
 
-	.note-editor:not(.disabled) :global(figure.drawing:hover),
-	.note-editor:not(.disabled) :global(figure.drawing[data-drawing*='"s":[]']) {
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--line) 30%, transparent);
+	.note-editor :global(figure.drawing .plus) {
+		position: absolute;
+		width: 15px;
+		height: 15px;
+		transform: translate(-50%, -50%);
+		background:
+			linear-gradient(var(--line), var(--line)) center / 100% 1px no-repeat,
+			linear-gradient(var(--line), var(--line)) center / 1px 100% no-repeat;
+		opacity: 0.45;
+		pointer-events: none;
+		transition: opacity 200ms ease;
+	}
+
+	.note-editor :global(figure.drawing .plus.tl) { left: 0; top: 0; }
+	.note-editor :global(figure.drawing .plus.tr) { left: 100%; top: 0; }
+	.note-editor :global(figure.drawing .plus.bl) { left: 0; top: 100%; }
+	.note-editor :global(figure.drawing .plus.br) { left: 100%; top: 100%; }
+
+	.note-editor:not(.disabled) :global(figure.drawing:hover .plus) {
+		opacity: 0.9;
 	}
 
 	.note-editor :global(figure.drawing canvas) {
