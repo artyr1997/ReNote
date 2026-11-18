@@ -369,7 +369,7 @@ html.desktop :is(.imp, .nav-del) { right: calc(6.25% - 28px); top: calc(6.25% + 
 html.desktop .info-btn { left: calc(6.25% - 28px); bottom: 6.25%; }
 html.desktop :is(.exp, .nav-full) { right: calc(6.25% - 28px); bottom: 6.25%; }
 html.desktop :is(.nav-next, .nav-back, .nav-info, .kofi-button) { left: calc(6.25% - 28px); }
-html.desktop :is(.nav-new, .nav-edit, .edit, .start-button) { right: calc(6.25% - 28px); }
+html.desktop :is(.nav-new, .nav-draw, .nav-edit, .edit, .start-button) { right: calc(6.25% - 28px); }
 
 /* plain ones: a little faint until pointed at */
 html.desktop :is(.exit, .nav-home, .imp, .nav-del, .info-btn, .exp, .nav-full) {

@@ -15,6 +15,7 @@
 	let body = $state(note?.body ?? '');
 	let showSaved = $state(false);
 	let editor: HTMLDivElement | undefined = $state();
+	let noteEditor: NoteEditor | undefined = $state();
 
 	// full mode opens straight into editing, caret at the end of the text
 	onMount(() => {
@@ -112,6 +113,11 @@
 </button>
 
 <!-- NEW right-center (changes are autosaved) -->
+<!-- DRAW right-bottom: a drawing where the caret is (⌘D) -->
+<button class="nav-btn nav-draw wide-only" onclick={() => noteEditor?.draw()} title="Draw (⌘D)">
+	<p>{t('DRAW')}</p>
+</button>
+
 <a class="nav-btn nav-new wide-only" href="/new?space={selectedSpace.element}" title="New note">
 	<p>{t('NEW')}</p>
 </a>
@@ -132,6 +138,7 @@
 		/>
 
 		<NoteEditor
+			bind:this={noteEditor}
 			bind:element={editor}
 			class="note-body"
 			bind:value={body}
@@ -203,6 +210,11 @@
 		right: calc(6.25% - 7px);
 		top: 50%;
 		transform: translateY(-50%);
+	}
+
+	.nav-draw {
+		right: calc(6.25% - 7px);
+		bottom: calc(6.25% + 1px);
 	}
 
 	/* Content block */

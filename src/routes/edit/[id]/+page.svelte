@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { withoutDrawings } from '$lib/draw/ink';
 	import { t } from '$lib/lang.svelte';
 	import { goto } from '$app/navigation';
 	import { store } from '$lib/store';
@@ -17,7 +18,7 @@
 	});
 
 	function wordCount(text: string): number {
-		return text.trim().split(/\s+/).filter(Boolean).length;
+		return withoutDrawings(text).trim().split(/\s+/).filter(Boolean).length;
 	}
 
 	function formatDate(ts: number): string {

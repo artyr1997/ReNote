@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { withoutDrawings } from '$lib/draw/ink';
 	import { t, tx } from '$lib/lang.svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { Note, Space } from '$lib/db';
@@ -16,7 +17,7 @@
 		const q = searchQuery.trim().toLowerCase();
 		if (!q) return [];
 		return notes
-			.filter(n => n.title.toLowerCase().includes(q) || n.body.toLowerCase().includes(q))
+			.filter(n => n.title.toLowerCase().includes(q) || withoutDrawings(n.body).toLowerCase().includes(q))
 			.slice(0, 8)
 			.map(n => ({ note: n, space: spaces.find(s => s.id === n.spaceId) }));
 	});

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { withoutDrawings } from '$lib/draw/ink';
 	import { t, tx } from '$lib/lang.svelte';
 	import { onDestroy, tick } from 'svelte';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -45,7 +46,7 @@
 		searchQuery.trim()
 			? notes.filter(n =>
 				n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				n.body.toLowerCase().includes(searchQuery.toLowerCase())
+				withoutDrawings(n.body).toLowerCase().includes(searchQuery.toLowerCase())
 			)
 			: notes
 	);

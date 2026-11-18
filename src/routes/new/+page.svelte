@@ -16,6 +16,7 @@
 	let selectedIdx = $state(0);
 	let showSaved = $state(false);
 	let editor: HTMLDivElement | undefined = $state();
+	let noteEditor: NoteEditor | undefined = $state();
 
 	$effect(() => {
 		if (spaces.length > 0 && preselectedElement) {
@@ -133,6 +134,11 @@
 </button>
 
 <!-- NEW right-center: start another note (this one is autosaved) -->
+<!-- DRAW right-bottom: a drawing where the caret is (⌘D) -->
+<button class="nav-btn nav-draw wide-only" onclick={() => noteEditor?.draw()} title="Draw (⌘D)">
+	<p>{t('DRAW')}</p>
+</button>
+
 <button class="nav-btn nav-new wide-only" onclick={newNote} title="New note">
 	<p>{t('NEW')}</p>
 </button>
@@ -151,6 +157,7 @@
 			bind:value={title}
 		/>
 		<NoteEditor
+			bind:this={noteEditor}
 			bind:element={editor}
 			class="body-input"
 			bind:value={body}
@@ -222,6 +229,11 @@
 		right: calc(6.25% - 7px);
 		top: 50%;
 		transform: translateY(-50%);
+	}
+
+	.nav-draw {
+		right: calc(6.25% - 7px);
+		bottom: calc(6.25% + 1px);
 	}
 
 	/* Input block */

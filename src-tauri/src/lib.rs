@@ -4,6 +4,9 @@
 
 mod db;
 
+// PAD: the trackpad as a tablet, for the drawings in the notes (moved from ReDraw)
+mod pad;
+
 use db::{Db, NewNote, NewSpace, Note, NoteChanges, Space};
 use std::sync::Mutex;
 use tauri::{Manager, State};
@@ -733,7 +736,15 @@ pub fn run() {
             update_note,
             delete_note,
             write_text_file,
+            pad::pad_start,
+            pad::pad_stop,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running ReNote");
+        .build(tauri::generate_context!())
+        .expect("error while running ReNote")
+        .run(|_app, event| {
+            // the pointer never stays held after ReNote is gone (PAD)
+            if let tauri::RunEvent::Exit = event {
+                pad::pad_stop();
+            }
+        });
 }

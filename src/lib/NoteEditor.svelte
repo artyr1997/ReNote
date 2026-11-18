@@ -1,8 +1,12 @@
 <script lang="ts">
 	import { scrollFade } from './scrollFade';
+	import DrawBoard from './draw/DrawBoard.svelte';
+	import { DRAWING, decode, encode, paint, type Stroke } from './draw/ink';
 
-	// Plain-text note editor with highlighter marks.
-	// Highlights are stored in the text as ==marked text== so notes stay plain text.
+	// Plain-text note editor with highlighter marks and drawings.
+	// Highlights are stored in the text as ==marked text== so notes stay plain text; a drawing is a line of its
+	// own, ⟦drawing {…}⟧ (draw/ink.ts), shown as the drawing between the words. ⌘D draws a new one where the
+	// caret is; a click on one draws on it again (draw/DrawBoard.svelte, on the whole window).
 	let {
 		value = $bindable(''),
 		placeholder = '',
@@ -25,8 +29,36 @@
 		return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 	}
 
-	function toHtml(text: string): string {
+	function wordsHtml(text: string): string {
 		return escapeHtml(text).replace(/==([\s\S]+?)==/g, '<mark>$1</mark>');
+	}
+
+	const attribute = (text: string) => escapeHtml(text).replace(/"/g, '&quot;');
+
+	/** the words as they are written, the drawings as drawings */
+	function toHtml(text: string): string {
+		let out = '';
+		let last = 0;
+		for (const m of text.matchAll(DRAWING)) {
+			out += wordsHtml(text.slice(last, m.index));
+			out += `<figure class="drawing" contenteditable="false" data-drawing="${attribute(m[1])}"><canvas></canvas></figure>`;
+			last = m.index! + m[0].length;
+		}
+		return out + wordsHtml(text.slice(last));
+	}
+
+	/** the drawings drawn, as wide as the text (smaller if they don't fit) */
+	function paintDrawings() {
+		element?.querySelectorAll<HTMLElement>('figure.drawing').forEach((figure) => {
+			const canvas = figure.querySelector('canvas');
+			if (canvas) paint(canvas, decode(figure.dataset.drawing ?? ''), figure.clientWidth);
+		});
+	}
+
+	function render(text: string) {
+		if (!element) return;
+		element.innerHTML = toHtml(text);
+		paintDrawings();
 	}
 
 	function serialize(root: Node, withMarks = true): string {
@@ -36,6 +68,12 @@
 				out += node.textContent;
 			} else if (node.nodeName === 'BR') {
 				out += '\n';
+			} else if (node.nodeName === 'FIGURE' && (node as HTMLElement).dataset.drawing !== undefined) {
+				// a drawing: a line of its own
+				if (withMarks) {
+					if (out && !out.endsWith('\n')) out += '\n';
+					out += `⟦drawing ${(node as HTMLElement).dataset.drawing}⟧\n`;
+				}
 			} else if (node.nodeName === 'MARK') {
 				const inner = serialize(node, withMarks);
 				if (inner) out += withMarks ? MARK + inner + MARK : inner;
@@ -53,7 +91,7 @@
 	// so typing doesn't reset the caret.
 	$effect(() => {
 		if (element && serialize(element) !== value) {
-			element.innerHTML = toHtml(value);
+			render(value);
 			// a different note was loaded — its history starts fresh
 			undoStack = [];
 			redoStack = [];
@@ -121,7 +159,7 @@
 
 	function restore(snap: Snapshot) {
 		if (!element) return;
-		element.innerHTML = toHtml(snap.value);
+		render(snap.value);
 		value = snap.value;
 		setOffsets(snap.start, snap.end);
 		lastTypingAt = 0;
@@ -234,9 +272,80 @@
 		commit();
 	}
 
+	// ── drawings ──
+
+	/** a drawing being drawn: on one already in the note, or a new one for where the caret was */
+	let board: { strokes: Stroke[]; figure: HTMLElement | null; at: Range | null } | null = $state(null);
+
+	export function draw() {
+		if (disabled || !element) return;
+		const selection = getSelection();
+		const range = selection && selection.rangeCount && element.contains(selection.getRangeAt(0).startContainer)
+			? selection.getRangeAt(0).cloneRange()
+			: null;
+		board = { strokes: [], figure: null, at: range };
+	}
+
+	function drawn(strokes: Stroke[]) {
+		const b = board;
+		board = null;
+		if (!b || !element) return;
+		if (!b.figure && !strokes.length) return;
+		pushHistory();
+		lastTypingAt = 0;
+		if (b.figure) {
+			// drawn on: kept as it is now, or gone if nothing is left of it
+			if (strokes.length) b.figure.dataset.drawing = encode(strokes);
+			else b.figure.remove();
+		} else {
+			const figure = document.createElement('figure');
+			figure.className = 'drawing';
+			figure.contentEditable = 'false';
+			figure.dataset.drawing = encode(strokes);
+			if (b.at) {
+				b.at.collapse(true);
+				b.at.insertNode(figure);
+			} else {
+				element.appendChild(figure);
+			}
+		}
+		commit();
+		// written again from the text: each drawing a line of its own
+		render(value);
+	}
+
+	function handleClick(e: MouseEvent) {
+		if (disabled) return;
+		const figure = (e.target as HTMLElement | null)?.closest?.('figure.drawing') as HTMLElement | null;
+		if (!figure || !element?.contains(figure)) return;
+		e.preventDefault();
+		board = { strokes: decode(figure.dataset.drawing ?? ''), figure, at: null };
+	}
+
+	// drawn again as wide as the text is now, and in the theme's ink
+	function repaints(node: HTMLElement) {
+		let width = node.clientWidth;
+		const resized = new ResizeObserver(() => {
+			if (node.clientWidth === width) return;
+			width = node.clientWidth;
+			paintDrawings();
+		});
+		resized.observe(node);
+		addEventListener('themechange', paintDrawings);
+		return {
+			destroy() {
+				resized.disconnect();
+				removeEventListener('themechange', paintDrawings);
+			},
+		};
+	}
+
 	function handleKeydown(e: KeyboardEvent) {
 		const mod = e.metaKey || e.ctrlKey;
-		if (mod && e.code === 'KeyB') {
+		if (mod && e.code === 'KeyD') {
+			e.preventDefault();
+			draw();
+		} else if (mod && e.code === 'KeyB') {
 			e.preventDefault();
 			toggleMark();
 		} else if (mod && e.code === 'KeyZ') {
@@ -262,10 +371,16 @@
 	data-empty={value === '' ? '' : undefined}
 	use:scrollFade
 	use:markSides
+	use:repaints
 	onbeforeinput={handleBeforeInput}
 	oninput={commit}
 	onkeydown={handleKeydown}
+	onclick={handleClick}
 ></div>
+
+{#if board}
+	<DrawBoard strokes={board.strokes} ondone={drawn} />
+{/if}
 
 <style>
 	.note-editor {
@@ -291,6 +406,22 @@
 	.note-editor.disabled {
 		cursor: default;
 		opacity: 0.3;
+	}
+
+	/* a drawing between the words: a line of its own, as wide as the text; a click draws on it again */
+	.note-editor :global(figure.drawing) {
+		display: block;
+		margin: 0.6em 0;
+		cursor: pointer;
+		user-select: none;
+	}
+
+	.note-editor :global(figure.drawing canvas) {
+		display: block;
+	}
+
+	.note-editor.disabled :global(figure.drawing) {
+		cursor: default;
 	}
 
 	/* highlight look lives in app.css (.ink-mark); here only the narrower side
