@@ -767,6 +767,13 @@
 			height: calc(100% - 40px);
 		}
 	}
+	/* the words as large as in a small window, whatever its size (as in all the Re apps) */
+	:global(html.desktop) .search-input {
+		font-size: 18px;
+	}
+	:global(html.desktop) .title-input {
+		font-size: 18px;
+	}
 
 	@media (max-width: 640px) {
 		:global(html:not(.desktop)) .nav-home, :global(html:not(.desktop)) .nav-corner { font-size: 16px; }

@@ -352,6 +352,13 @@
 
 		:global(html.desktop) .el-nav-btn { font-size: 1.5rem; }
 	}
+	/* the words as large as in a small window, whatever its size (as in all the Re apps) */
+	:global(html.desktop) .title-input {
+		font-size: 18px;
+	}
+	:global(html.desktop) .content-block :global(.note-body) {
+		font-size: 16px;
+	}
 
 	@media (max-width: 640px) {
 		:global(html:not(.desktop)) .title-input { top: 0; }

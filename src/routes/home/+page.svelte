@@ -687,6 +687,10 @@
 		/* only in the window in use, while nothing is typed in it */
 		:global(html.desktop.blurred) .home-search-input:placeholder-shown { opacity: 0; pointer-events: none; }
 	}
+	/* the words as large as in a small window, whatever its size (as in all the Re apps) */
+	:global(html.desktop) .home-search-input {
+		font-size: 18px;
+	}
 
 	@media (max-width: 640px) {
 		:global(html:not(.desktop)) .exit, :global(html:not(.desktop)) .imp, :global(html:not(.desktop)) .exp { font-size: 16px; }
