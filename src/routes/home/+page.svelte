@@ -641,52 +641,59 @@
 	}
 
 	/* ── a small desktop window: the four spaces side by side ── */
-	.compact-spaces { display: none; }
+	/* the spaces as in a small window, whatever its size: their shapes in a row, each named under it */
+	:global(html:not(.desktop)) .compact-spaces { display: none; }
+	:global(html.desktop) :is(.bottom-box, .top-box, .kanji-image) { display: none; }
+
+	:global(html.desktop) .compact-spaces {
+		position: absolute;
+		/* between the side buttons (NEW, IMP, INFO, EXP) */
+		inset: 64px calc(6.25% + 64px) 44px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 4vw;
+	}
+
+	.compact-space {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 12px;
+		background: transparent;
+		border: none;
+		padding: 0;
+		cursor: pointer;
+		opacity: 0.8;
+		transition: opacity 0.3s;
+	}
+
+	.compact-space:hover { opacity: 1; }
+
+	.compact-mark {
+		display: block;
+		width: min(13vw, 30vh);
+		height: min(13vw, 30vh);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: var(--line);
+	}
+
+	.compact-label {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		font-family: 'Noto Sans JP', sans-serif;
+		font-size: 12px;
+		letter-spacing: 0.3em;
+		color: var(--text);
+	}
 
 	@media (max-width: 759px), (max-height: 559px) {
-		:global(html.desktop) .compact-spaces {
-			position: absolute;
-			inset: 64px 24px 44px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			gap: 4vw;
-		}
-
-		.compact-space {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			gap: 12px;
-			background: transparent;
-			border: none;
-			padding: 0;
-			cursor: pointer;
-			opacity: 0.8;
-			transition: opacity 0.3s;
-		}
-
-		.compact-space:hover { opacity: 1; }
-
-		.compact-mark {
-			display: block;
-			width: min(17vw, 34vh);
-			height: min(17vw, 34vh);
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			color: var(--line);
-		}
-
-		.compact-label {
-			display: flex;
-			align-items: center;
-			gap: 8px;
-			font-family: 'Noto Sans JP', sans-serif;
-			font-size: 12px;
-			letter-spacing: 0.3em;
-			color: var(--text);
-		}
+		/* no side buttons: the row has the window */
+		:global(html.desktop) .compact-spaces { inset: 64px 24px 44px; }
+		.compact-mark { width: min(17vw, 34vh); height: min(17vw, 34vh); }
 
 		:global(html.desktop) .home-search { top: 14px; }
 		:global(html.desktop) .home-search-input { font-size: 18px; transition: opacity 200ms ease; }
