@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { scrollFade } from './scrollFade';
-	import DrawBoard from './draw/DrawBoard.svelte';
-	import { DRAWING, decode, encode, paint, type Stroke } from './draw/ink';
+	import { DRAWING, GROW, HEIGHT, decode, encode, paint, segment, themeInk, type Drawing, type Stroke } from './draw/ink';
 
 	// Plain-text note editor with highlighter marks and drawings.
 	// Highlights are stored in the text as ==marked text== so notes stay plain text; a drawing is a line of its
-	// own, ⟦drawing {…}⟧ (draw/ink.ts), shown as the drawing between the words. ⌘D draws a new one where the
-	// caret is; a click on one draws on it again (draw/DrawBoard.svelte, on the whole window).
+	// own, ⟦drawing {…}⟧ (draw/ink.ts), a place between the words drawn on right there: the pen dragged,
+	// the rubber with ⌥; it grows as it is drawn near its bottom. ⌘D makes a new one where the caret is.
 	let {
 		value = $bindable(''),
 		placeholder = '',
@@ -47,7 +46,7 @@
 		return out + wordsHtml(text.slice(last));
 	}
 
-	/** the drawings drawn, as wide as the text (smaller if they don't fit) */
+	/** the drawings drawn, as wide as the text (their lines with it) */
 	function paintDrawings() {
 		element?.querySelectorAll<HTMLElement>('figure.drawing').forEach((figure) => {
 			const canvas = figure.querySelector('canvas');
@@ -272,57 +271,94 @@
 		commit();
 	}
 
-	// ── drawings ──
+	// ── drawings: drawn on where they are ──
 
-	/** a drawing being drawn: on one already in the note, or a new one for where the caret was */
-	let board: { strokes: Stroke[]; figure: HTMLElement | null; at: Range | null } | null = $state(null);
-
+	/** a new, empty drawing where the caret is (or at the end), as wide as the text */
 	export function draw() {
 		if (disabled || !element) return;
-		const selection = getSelection();
-		const range = selection && selection.rangeCount && element.contains(selection.getRangeAt(0).startContainer)
-			? selection.getRangeAt(0).cloneRange()
-			: null;
-		board = { strokes: [], figure: null, at: range };
-	}
-
-	function drawn(strokes: Stroke[]) {
-		const b = board;
-		board = null;
-		if (!b || !element) return;
-		if (!b.figure && !strokes.length) return;
 		pushHistory();
 		lastTypingAt = 0;
-		if (b.figure) {
-			// drawn on: kept as it is now, or gone if nothing is left of it
-			if (strokes.length) b.figure.dataset.drawing = encode(strokes);
-			else b.figure.remove();
+		const figure = document.createElement('figure');
+		figure.className = 'drawing';
+		figure.contentEditable = 'false';
+		const selection = getSelection();
+		const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
+		if (range && element.contains(range.startContainer)) {
+			range.collapse(true);
+			range.insertNode(figure);
 		} else {
-			const figure = document.createElement('figure');
-			figure.className = 'drawing';
-			figure.contentEditable = 'false';
-			figure.dataset.drawing = encode(strokes);
-			if (b.at) {
-				b.at.collapse(true);
-				b.at.insertNode(figure);
-			} else {
-				element.appendChild(figure);
-			}
+			element.appendChild(figure);
 		}
+		// as wide as the text is, where it went
+		figure.dataset.drawing = encode({ w: Math.max(200, figure.clientWidth || element.clientWidth), h: HEIGHT, strokes: [] });
 		commit();
 		// written again from the text: each drawing a line of its own
 		render(value);
 	}
 
-	function handleClick(e: MouseEvent) {
-		if (disabled) return;
-		const figure = (e.target as HTMLElement | null)?.closest?.('figure.drawing') as HTMLElement | null;
-		if (!figure || !element?.contains(figure)) return;
-		e.preventDefault();
-		board = { strokes: decode(figure.dataset.drawing ?? ''), figure, at: null };
+	/** the stroke being drawn, on which drawing */
+	let stroke: { figure: HTMLElement; canvas: HTMLCanvasElement; drawing: Drawing; scale: number; live: Stroke } | null = null;
+
+	function place(e: PointerEvent, canvas: HTMLCanvasElement, scale: number): [number, number] {
+		const box = canvas.getBoundingClientRect();
+		return [(e.clientX - box.left) / scale, (e.clientY - box.top) / scale];
 	}
 
-	// drawn again as wide as the text is now, and in the theme's ink
+	function context(canvas: HTMLCanvasElement, scale: number) {
+		const c = canvas.getContext('2d');
+		const dpr = window.devicePixelRatio || 1;
+		c?.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
+		return c;
+	}
+
+	function pointerDown(e: PointerEvent) {
+		if (disabled || e.button !== 0) return;
+		const canvas = e.target as HTMLElement;
+		if (canvas.nodeName !== 'CANVAS') return;
+		const figure = canvas.closest('figure.drawing') as HTMLElement | null;
+		if (!figure || !element?.contains(figure)) return;
+		e.preventDefault();
+		canvas.setPointerCapture(e.pointerId);
+		const drawing = decode(figure.dataset.drawing ?? '');
+		const scale = figure.clientWidth / drawing.w;
+		// the drawing as it was, for ⌘Z
+		pushHistory();
+		lastTypingAt = 0;
+		const live: Stroke = { tool: e.altKey ? 'rub' : 'pen', points: [place(e, canvas as HTMLCanvasElement, scale)] };
+		stroke = { figure, canvas: canvas as HTMLCanvasElement, drawing, scale, live };
+		const c = context(stroke.canvas, scale);
+		if (c) segment(c, live, 0, themeInk());
+	}
+
+	function pointerMove(e: PointerEvent) {
+		if (!stroke) return;
+		const { canvas, scale, live } = stroke;
+		const c = context(canvas, scale);
+		const coalesced = e.getCoalescedEvents?.() ?? [];
+		for (const ev of coalesced.length ? coalesced : [e]) {
+			const p = place(ev, canvas, scale);
+			const last = live.points[live.points.length - 1];
+			if (Math.hypot(p[0] - last[0], p[1] - last[1]) * scale < 0.8) continue;
+			live.points.push(p);
+			// the piece before the new point can be drawn now that the next one is known
+			if (c) segment(c, live, live.points.length - 2, themeInk());
+		}
+	}
+
+	function pointerUp() {
+		const s = stroke;
+		stroke = null;
+		if (!s) return;
+		s.drawing.strokes.push(s.live);
+		// drawn near its bottom: more room under it
+		const lowest = Math.max(...s.live.points.map((p) => p[1]));
+		if (s.live.tool === 'pen' && lowest > s.drawing.h - 40) s.drawing.h = Math.ceil(lowest + GROW);
+		s.figure.dataset.drawing = encode(s.drawing);
+		paint(s.canvas, s.drawing, s.figure.clientWidth);
+		commit();
+	}
+
+		// drawn again as wide as the text is now, and in the theme's ink
 	function repaints(node: HTMLElement) {
 		let width = node.clientWidth;
 		const resized = new ResizeObserver(() => {
@@ -375,12 +411,11 @@
 	onbeforeinput={handleBeforeInput}
 	oninput={commit}
 	onkeydown={handleKeydown}
-	onclick={handleClick}
+	onpointerdown={pointerDown}
+	onpointermove={pointerMove}
+	onpointerup={pointerUp}
+	onpointercancel={pointerUp}
 ></div>
-
-{#if board}
-	<DrawBoard strokes={board.strokes} ondone={drawn} />
-{/if}
 
 <style>
 	.note-editor {
@@ -408,19 +443,28 @@
 		opacity: 0.3;
 	}
 
-	/* a drawing between the words: a line of its own, as wide as the text; a click draws on it again */
+	/* a drawing between the words: a line of its own, as wide as the text, drawn on right there. Its place
+	   shows faintly while the pointer is over it (an empty one always), so it is found */
 	.note-editor :global(figure.drawing) {
 		display: block;
 		margin: 0.6em 0;
-		cursor: pointer;
 		user-select: none;
+		box-shadow: inset 0 0 0 1px transparent;
+		transition: box-shadow 200ms ease;
+	}
+
+	.note-editor:not(.disabled) :global(figure.drawing:hover),
+	.note-editor:not(.disabled) :global(figure.drawing[data-drawing*='"s":[]']) {
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--line) 30%, transparent);
 	}
 
 	.note-editor :global(figure.drawing canvas) {
 		display: block;
+		touch-action: none;
+		cursor: crosshair;
 	}
 
-	.note-editor.disabled :global(figure.drawing) {
+	.note-editor.disabled :global(figure.drawing canvas) {
 		cursor: default;
 	}
 

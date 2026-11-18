@@ -22,8 +22,6 @@ const japanese: Record<string, string> = {
 	CLOSE: '閲覧終了',
 	BACK: '前に戻る',
 	DRAW: 'お絵描き',
-	DONE: '描き終え',
-	CLEAR: '全部消す',
 	FULL: '全画面化',
 	MANGA: '右から左',
 	FAVO: '栞を挟む',
