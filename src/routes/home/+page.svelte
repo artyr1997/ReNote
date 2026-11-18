@@ -279,7 +279,7 @@
 				title="{space.english} ({shortcutKeys[space.element]}) — {noteCounts[space.id!] ?? 0} notes"
 			>
 				<span class="compact-mark"><SpaceIcon element={space.element} strokeWidth={2} /></span>
-				<span class="compact-label"><SpaceIcon element={space.element} size={12} />{positions[i].label.text}</span>
+				<span class="compact-label">{positions[i].label.text}</span>
 			</button>
 		{/each}
 	</div>
