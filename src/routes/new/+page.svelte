@@ -128,20 +128,15 @@
 	<div class="saved-toast"><span>{tx('SAVED')}</span></div>
 {/if}
 
-<!-- BACK left-center -->
-<button class="nav-btn nav-back wide-only" onclick={back} title="Back (Esc)">
-	<p>{t('BACK')}</p>
-</button>
+<!-- BACK top left, NOVA top right (INFO bottom left, the layout's) -->
+<button class="corner-btn nav-corner nav-home wide-only" onclick={back} title="Back (Esc)">{t('BACK')}</button>
 
-<!-- NEW right-center: start another note (this one is autosaved) -->
 <!-- DRAW right-bottom: a drawing where the caret is (⌘D) -->
 <button class="nav-btn nav-draw wide-only" onclick={() => noteEditor?.draw()} title="Draw (⌘D)">
 	<p>{t('DRAW')}</p>
 </button>
 
-<button class="nav-btn nav-new wide-only" onclick={newNote} title="New note">
-	<p>{t('NOVA')}</p>
-</button>
+<button class="corner-btn nav-corner nav-del wide-only" onclick={newNote} title="New note">{t('NOVA')}</button>
 
 <!-- a small window: the note takes it all, BACK and NEW in the corners -->
 <button class="compact-btn bottom-left" onclick={back} title="Back (Esc)">BACK</button>
@@ -219,16 +214,32 @@
 		padding-top: 0.64em;
 	}
 
-	.nav-back {
-		left: calc(6.25% - 7px);
-		top: 50%;
-		transform: translateY(-50%);
+	/* BACK top left, NOVA top right: plain, as HOME and NOVA on a space's page */
+	.corner-btn {
+		position: absolute;
+		font-family: 'Noto Sans JP', sans-serif;
+		font-size: 20px;
+		color: var(--text);
+		text-decoration: none;
+		writing-mode: vertical-rl;
+		text-orientation: upright;
+		letter-spacing: 0.64em;
+		line-height: 32px;
+		background: transparent;
+		border: none;
+		cursor: pointer;
+		z-index: 10;
+		padding: 0;
 	}
 
-	.nav-new {
+	.nav-home {
+		left: calc(6.25% - 7px);
+		top: calc(6.25% + 1px);
+	}
+
+	.nav-del {
 		right: calc(6.25% - 7px);
-		top: 50%;
-		transform: translateY(-50%);
+		top: calc(6.25% + 1px);
 	}
 
 	.nav-draw {

@@ -47,9 +47,11 @@
 		return () => window.removeEventListener('keydown', newWindow, true);
 	});
 
-	// no INFO on the landing and on the note editors (full note, new note).
-	// Matched by route id, not URL, so it holds in the desktop app's webview too.
-	const noInfoRoutes = ['/', '/note/[id]', '/new'];
+	// no INFO on the landing; on the note editors (full note, new note) not in a small window's corner,
+	// which is BACK's there. Matched by route id, not URL, so it holds in the desktop app's webview too.
+	const noInfoRoutes = ['/'];
+	const editors = ['/note/[id]', '/new'];
+	let infoCorner = $derived(!editors.includes($page.route.id ?? ''));
 	let showInfo = $derived(!noInfoRoutes.includes($page.route.id ?? ''));
 </script>
 
@@ -59,5 +61,5 @@
 
 {@render children()}
 {#if showInfo}
-	<InfoPopup />
+	<InfoPopup corner={infoCorner} />
 {/if}

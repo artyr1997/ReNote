@@ -4,6 +4,9 @@
 	import { getNoteStats } from './store';
 	import SpaceIcon from './SpaceIcon.svelte';
 
+	/** its small-window corner (not on the note editors: BACK is there) */
+	let { corner = true }: { corner?: boolean } = $props();
+
 	let open = $state(false);
 	let noteCount = $state(0);
 	let spaceCounts: Record<string, number> = $state({});
@@ -45,7 +48,7 @@
 <svelte:window onkeydown={handleKeydown} />
 
 <button class="info-btn wide-only" onclick={toggle}>{t('INFO')}</button>
-<button class="compact-btn bottom-left" onclick={toggle}>INFO</button>
+{#if corner}<button class="compact-btn bottom-left" onclick={toggle}>INFO</button>{/if}
 
 {#if open}
 	<div class="info-overlay" onclick={toggle} aria-hidden="true"></div>
