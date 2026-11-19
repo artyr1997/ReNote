@@ -253,25 +253,25 @@
 	<!-- Background -->
 	<div class="background" aria-hidden="true"></div>
 
-	<!-- top left: NEW note on desktop; EXIT back to the landing on the web (the desktop app has no landing) -->
+	<!-- top right: NOVA on desktop (top left: IMPR); EXIT back to the landing on the web (the desktop app has no landing) -->
 	{#if isDesktop}
-		<a href="/new" class="exit wide-only" title="New note">{t('NOVA')}</a>
+		<a href="/new" class="exit swap wide-only" title="New note">{t('NOVA')}</a>
 	{:else}
 		<a href="/" class="exit wide-only">{t('EXIT')}</a>
 	{/if}
 
-	<!-- IMP -->
+	<!-- IMPR (on desktop top left, NOVA top right) -->
 	<input bind:this={fileInput} type="file" accept=".json" onchange={importNotes} class="file-input" />
-	<button class="imp wide-only" onclick={() => fileInput.click()} title="Import">{t('IMP')}</button>
+	<button class="imp wide-only" class:swap={isDesktop} onclick={() => fileInput.click()} title="Import">{t('IMPR')}</button>
 
-	<!-- EXP -->
-	<button class="exp wide-only" onclick={openExportConfirm} title="Export">{t('EXP')}</button>
+	<!-- EXPR -->
+	<button class="exp wide-only" onclick={openExportConfirm} title="Export">{t('EXPR')}</button>
 
-	<!-- a small window: NEW and EXP in the corners, the four spaces in a row -->
+	<!-- a small window: NOVA and EXPR in the corners, the four spaces in a row -->
 	{#if isDesktop}
 		<a href="/new" class="compact-btn top-right" title="New note">NOVA</a>
 	{/if}
-	<button class="compact-btn bottom-right" onclick={openExportConfirm} title="Export">EXP</button>
+	<button class="compact-btn bottom-right" onclick={openExportConfirm} title="Export">EXPR</button>
 	<div class="compact-spaces">
 		{#each spaces as space, i}
 			<button
