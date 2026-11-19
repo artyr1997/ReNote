@@ -164,13 +164,13 @@
 			placeholder="Begin writing…"
 		/>
 		<div class="element-selector">
-			<button class="el-nav-btn" onclick={prev} title="Previous space (Option/Alt+←)">←</button>
+			<button class="el-nav-btn" onclick={prev} title="Previous space (Option/Alt+←)">&lt;</button>
 			<div class="el-center" title={selectedSpace?.english ?? ''}>
 				{#if selectedSpace}
 					<SpaceIcon element={selectedSpace.element} size={20} />
 				{/if}
 			</div>
-			<button class="el-nav-btn" onclick={next} title="Next space (Option/Alt+→)">→</button>
+			<button class="el-nav-btn" onclick={next} title="Next space (Option/Alt+→)">&gt;</button>
 		</div>
 	</div>
 </main>
