@@ -11,6 +11,12 @@
 			// when it turns, the old look fades into the new one
 			(function () {
 				var root = document.documentElement;
+				// the app: glass, its one look (lib/glass.ts); the website follows light and dark
+				if ('__TAURI_INTERNALS__' in window) {
+					root.classList.add('glass');
+					root.dataset.theme = 'dark';
+					return;
+				}
 				var system = matchMedia('(prefers-color-scheme: dark)');
 				function theme() {
 					var picked = null;
@@ -27,8 +33,7 @@
 					document.startViewTransition && !document.hidden ? document.startViewTransition(apply) : apply();
 				};
 				system.addEventListener('change', function () {
-					// on glass the look stays as it is (lib/glass.ts)
-					if (!root.classList.contains('glass')) window.setTheme(theme());
+					window.setTheme(theme());
 				});
 			})();
 		</script>
