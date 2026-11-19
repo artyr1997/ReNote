@@ -557,7 +557,7 @@ html.glass :is(.viewer, .reader, .edit-screen) {
 html.glass,
 html.glass body,
 html.glass *:not(:is(.side, .side *, .corner, .corner *, .pop-btn, .pop-btn *, .compact-btn, .compact-btn *,
-	.exit, .imp, .exp, .nav-home, .nav-info, .nav-edit, .nav-corner, .nav-button, .nav-button *, .nav-btn, .nav-btn *,
+	.exit, .imp, .exp, .info-btn, .nav-home, .nav-info, .nav-edit, .nav-corner, .nav-button, .nav-button *, .nav-btn, .nav-btn *,
 	.start-button, .start-button *, .kofi-button, .kofi-button *, button.play, button.play *, button.paused, button.paused *,
 	.rub-word, .rub-word *, .mini-btn, .mini-btn *)) {
 	font-family: 'M PLUS 1p', sans-serif !important;
