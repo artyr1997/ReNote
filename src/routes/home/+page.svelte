@@ -255,7 +255,7 @@
 
 	<!-- top left: NEW note on desktop; EXIT back to the landing on the web (the desktop app has no landing) -->
 	{#if isDesktop}
-		<a href="/new" class="exit wide-only" title="New note">{t('NEW')}</a>
+		<a href="/new" class="exit wide-only" title="New note">{t('NOVA')}</a>
 	{:else}
 		<a href="/" class="exit wide-only">{t('EXIT')}</a>
 	{/if}
@@ -269,7 +269,7 @@
 
 	<!-- a small window: NEW and EXP in the corners, the four spaces in a row -->
 	{#if isDesktop}
-		<a href="/new" class="compact-btn top-right" title="New note">NEW</a>
+		<a href="/new" class="compact-btn top-right" title="New note">NOVA</a>
 	{/if}
 	<button class="compact-btn bottom-right" onclick={openExportConfirm} title="Export">EXP</button>
 	<div class="compact-spaces">

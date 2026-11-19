@@ -140,12 +140,12 @@
 </button>
 
 <button class="nav-btn nav-new wide-only" onclick={newNote} title="New note">
-	<p>{t('NEW')}</p>
+	<p>{t('NOVA')}</p>
 </button>
 
 <!-- a small window: the note takes it all, BACK and NEW in the corners -->
 <button class="compact-btn bottom-left" onclick={back} title="Back (Esc)">BACK</button>
-<button class="compact-btn top-right" onclick={newNote} title="New note">NEW</button>
+<button class="compact-btn top-right" onclick={newNote} title="New note">NOVA</button>
 
 <main class="new-screen fade-in">
 	<div class="input-block">

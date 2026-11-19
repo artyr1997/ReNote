@@ -119,12 +119,12 @@
 </button>
 
 <a class="nav-btn nav-new wide-only" href="/new?space={selectedSpace.element}" title="New note">
-	<p>{t('NEW')}</p>
+	<p>{t('NOVA')}</p>
 </a>
 
 <!-- a small window: the note takes it all, BACK and NEW in the corners -->
 <button class="compact-btn bottom-left" onclick={back} title="Back (Esc)">BACK</button>
-<a class="compact-btn top-right" href="/new?space={selectedSpace.element}" title="New note">NEW</a>
+<a class="compact-btn top-right" href="/new?space={selectedSpace.element}" title="New note">NOVA</a>
 
 <main class="note-screen fade-in">
 	<div class="content-block">

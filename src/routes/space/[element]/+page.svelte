@@ -226,7 +226,7 @@
 
 	<!-- a small window: the list and the note side by side, HOME and NEW in the corners -->
 	<a class="compact-btn top-right" href="/home" title="Home (Esc)">HOME</a>
-	<a class="compact-btn bottom-right" href="/new?space={space?.element}" title="New note (N)">NEW</a>
+	<a class="compact-btn bottom-right" href="/new?space={space?.element}" title="New note (N)">NOVA</a>
 	{#if space}
 		<p class="compact-title">{space.english.toUpperCase()}</p>
 	{/if}
@@ -249,7 +249,7 @@
 
 	<!-- NEW right-center (notes are autosaved, so no SAVE button) -->
 	<a class="nav-button nav-new wide-only" href="/new?space={space?.element}" title="New note (N)">
-		<p>{t('NEW')}</p>
+		<p>{t('NOVA')}</p>
 	</a>
 
 	{#if space}
