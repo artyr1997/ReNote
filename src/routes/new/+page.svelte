@@ -132,9 +132,7 @@
 <button class="corner-btn nav-corner nav-home wide-only" onclick={back} title="Back (Esc)">{t('BACK')}</button>
 
 <!-- DRAW right-bottom: a drawing where the caret is (⌘D) -->
-<button class="nav-btn nav-draw wide-only" onclick={() => noteEditor?.draw()} title="Draw (⌘D)">
-	<p>{t('DRAW')}</p>
-</button>
+<button class="corner-btn nav-corner nav-full wide-only" onclick={() => noteEditor?.draw()} title="Draw (⌘D)">{t('DRAW')}</button>
 
 <button class="corner-btn nav-corner nav-del wide-only" onclick={newNote} title="New note">{t('NOVA')}</button>
 
@@ -183,36 +181,8 @@
 
 	/* Navigation */
 
-	.nav-btn {
-		position: fixed;
-		width: 42px;
-		height: 164px;
-		border: 2px solid var(--line);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: transparent;
-		color: var(--text);
-		font-family: 'Noto Sans JP', sans-serif;
-		font-size: 20px;
-		cursor: pointer;
-		z-index: 10;
-		transition: background 200ms ease, color 200ms ease;
-	}
 
-	.nav-btn:hover {
-		background: var(--line);
-		color: var(--bg);
-	}
 
-	.nav-btn p {
-		margin: 0;
-		writing-mode: vertical-rl;
-		text-orientation: upright;
-		letter-spacing: 0.64em;
-		line-height: 32px;
-		padding-top: 0.64em;
-	}
 
 	/* BACK top left, NOVA top right: plain, as HOME and NOVA on a space's page */
 	.corner-btn {
@@ -242,7 +212,7 @@
 		top: calc(6.25% + 1px);
 	}
 
-	.nav-draw {
+	.nav-full {
 		right: calc(6.25% - 7px);
 		bottom: calc(6.25% + 1px);
 	}
@@ -412,11 +382,7 @@
 		:global(html:not(.desktop)) .new-screen { overflow: visible; }
 
 
-		:global(html:not(.desktop)) .nav-btn {
-			width: 36px;
-			height: 120px;
-			font-size: 16px;
-		}
+		:global(html:not(.desktop)) .corner-btn { font-size: 16px; }
 
 		:global(html:not(.desktop)) .saved-toast {
 			width: auto;
