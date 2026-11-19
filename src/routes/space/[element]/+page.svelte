@@ -237,20 +237,11 @@
 		</div>
 	{/if}
 
+	<!-- top right: NOVA, a new note here (a note goes with Backspace; the next space with →) -->
+	<a class="nav-corner nav-del wide-only" href="/new?space={space?.element}" title="New note (N)">{t('NOVA')}</a>
 	{#if activeNote}
-		<button class="nav-corner nav-del wide-only" onclick={() => showDeleteConfirm = true} title="Delete (Backspace)">{t('DEL')}</button>
 		<a class="nav-corner nav-full wide-only" href="/note/{activeNote.id}">{t('FULL', 'FULL NOTE')}</a>
 	{/if}
-
-	<!-- NEXT left-center: go to the next space -->
-	<button class="nav-button nav-next wide-only" onclick={() => switchSpace(1)} title="Next space (→)">
-		<p>{t('NEXT', 'NEXT SPACE')}</p>
-	</button>
-
-	<!-- NEW right-center (notes are autosaved, so no SAVE button) -->
-	<a class="nav-button nav-new wide-only" href="/new?space={space?.element}" title="New note (N)">
-		<p>{t('NOVA')}</p>
-	</a>
 
 	{#if space}
 		<div class="kanji-block">
@@ -365,21 +356,7 @@
 		color: var(--bg);
 	}
 
-	.nav-next {
-		position: absolute;
-		left: calc(6.25% - 7px);
-		top: 50%;
-		transform: translateY(-50%);
-		letter-spacing: 0.64em;
-	}
 
-	.nav-new {
-		position: absolute;
-		right: calc(6.25% - 7px);
-		top: 50%;
-		transform: translateY(-50%);
-		letter-spacing: 0.64em;
-	}
 
 	.nav-corner {
 		position: absolute;
