@@ -43,7 +43,7 @@ final class HomePage: Page {
         blur.isHidden = true
         blur.alphaValue = 0.85
         addSubview(blur)
-        search.placeholder = tx("Search")
+        search.placeholder = "Search"
         search.toolTip = "Search all notes (/)"
         search.onChange = { [weak self] in self?.find() }
         addSubview(search)
