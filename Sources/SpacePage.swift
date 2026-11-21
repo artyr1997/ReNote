@@ -149,14 +149,13 @@ final class SpacePage: Page {
         Store.shared.update(id, title: t, body: b, updatedAt: time)
     }
 
-    /// ⌘S: saved, the list in order again, SAVED a moment
-    private func saveWithToast() {
+    /// ⌘S: saved, the list in order again
+    private func saveNow() {
         saving?.cancel()
         saving = nil
         save()
         reload()
         refreshList()
-        host?.saved()
     }
 
     private func selectRelative(_ delta: Int) {
@@ -208,7 +207,7 @@ final class SpacePage: Page {
 
     override func key(_ e: NSEvent) -> Bool {
         let mods = e.modifierFlags.intersection([.command, .control, .option, .shift])
-        if mods == .command && e.keyCode == 1 { saveWithToast(); return true }            // ⌘S
+        if mods == .command && e.keyCode == 1 { saveNow(); return true }            // ⌘S
         if e.keyCode == 53 { host?.go(.home); return true }                               // Esc
         if mods == .command && e.keyCode == 3 {                                            // ⌘F
             if body.editing, let id = active { host?.go(.note(id)) } else { search.focus() }

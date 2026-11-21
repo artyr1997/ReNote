@@ -146,17 +146,12 @@ final class EditPage: Page {
         }
     }
 
-    /// ⌘S: saved, SAVED a moment, then the space's page
+    /// ⌘S: saved, then the space's page
     private func save() {
         saving?.cancel()
         saving = nil
         persist(force: true)
-        host?.saved()
-        let element = space?.element ?? "water"
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
-            guard let self, self.superview != nil else { return }
-            self.host?.go(.space(element, nil))
-        }
+        host?.go(.space(space?.element ?? "water", nil))
     }
 
     private func goBack() {

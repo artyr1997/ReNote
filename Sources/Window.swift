@@ -154,7 +154,6 @@ final class Host: Flipped {
     private let marks = Marks()
     private let strip = DragStrip()
     private var popup: Popup?
-    private var toast: Toast?
 
     var wide: Bool { bounds.width >= 760 && bounds.height >= 560 }
     var focused = true
@@ -215,7 +214,6 @@ final class Host: Flipped {
         super.layout()
         layoutCorners()
         popup?.frame = bounds
-        toast?.place(in: bounds)
     }
 
     private func layoutCorners() {
@@ -279,20 +277,6 @@ final class Host: Flipped {
     }
 
     var popupShown: Bool { popup != nil }
-
-    /// SAVED, coming down from the top a moment
-    func saved(for seconds: Double = 1.5) {
-        toast?.removeFromSuperview()
-        let t = Toast(tx("SAVED"))
-        addSubview(t, positioned: .below, relativeTo: strip)
-        toast = t
-        t.place(in: bounds)
-        t.comeDown()
-        DispatchQueue.main.asyncAfter(deadline: .now() + seconds) { [weak self, weak t] in
-            t?.removeFromSuperview()
-            if self?.toast === t { self?.toast = nil }
-        }
-    }
 
     // ── INFO: how many notes, where, and the keys ──
 
@@ -438,61 +422,6 @@ final class Popup: Flipped {
     override func mouseDown(with event: NSEvent) {
         if !pane.frame.contains(convert(event.locationInWindow, from: nil)) { onClose?() }
     }
-}
-
-/// SAVED: a frame coming down from the top, its word written down
-final class Toast: Flipped {
-    private let word: String
-
-    init(_ word: String) {
-        self.word = word
-        super.init(frame: .zero)
-        let blur = veil()
-        blur.autoresizingMask = [.width, .height]
-        addSubview(blur)
-        wantsLayer = true
-        layer?.backgroundColor = Ink.pane.cgColor
-    }
-
-    required init?(coder: NSCoder) { fatalError() }
-
-    var height: CGFloat { max(200, CGFloat(word.count) * SideButton.advance + 48) }
-
-    func place(in bounds: NSRect) {
-        frame = NSRect(x: (bounds.width - 42) / 2, y: 0, width: 42, height: height)
-        subviews.first?.frame = self.bounds
-    }
-
-    func comeDown() {
-        let from = frame
-        frame.origin.y = -height
-        alphaValue = 0
-        NSAnimationContext.runAnimationGroup { c in
-            c.duration = 0.3
-            c.timingFunction = CAMediaTimingFunction(controlPoints: 0.22, 1, 0.36, 1)
-            animator().frame = from
-            animator().alphaValue = 1
-        }
-    }
-
-    override func draw(_ dirtyRect: NSRect) {
-        // its frame: no top, the window's edge is
-        Ink.line.setFill()
-        NSRect(x: 0, y: 0, width: 2, height: bounds.height).fill()
-        NSRect(x: bounds.width - 2, y: 0, width: 2, height: bounds.height).fill()
-        NSRect(x: 0, y: bounds.height - 2, width: bounds.width, height: 2).fill()
-        let attrs: [NSAttributedString.Key: Any] = [.font: Fonts.buttons(20), .foregroundColor: Ink.text]
-        let total = CGFloat(word.count) * SideButton.advance - 12
-        var y = (bounds.height - total) / 2
-        for letter in word {
-            let s = NSAttributedString(string: String(letter), attributes: attrs)
-            let size = s.size()
-            s.draw(at: NSPoint(x: (bounds.width - size.width) / 2, y: y + (20 - size.height) / 2 + 1))
-            y += SideButton.advance
-        }
-    }
-
-    override func hitTest(_ point: NSPoint) -> NSView? { nil }
 }
 
 /// In the corner where macOS has its buttons: a diamond while this window is the focused one, and P while

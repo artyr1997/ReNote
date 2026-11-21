@@ -28,8 +28,6 @@ enum Render {
                     w.host.showInfo()
                     shoot(w, "\(dir)/info-\(sizeName).png")
                     w.host.close()
-                    w.host.saved(for: 60)
-                    shoot(w, "\(dir)/saved-\(sizeName).png")
                 }
             }
         }
