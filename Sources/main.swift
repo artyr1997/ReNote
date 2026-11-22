@@ -4,6 +4,10 @@ import AppKit
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // keys of one's own, as set in ReDesk's keys popup (⌘/)
+        OwnKeys.start(app: "ReNote", standard: [
+            "newWindow": .init(45, "n"), "save": .init(1, "s"), "highlight": .init(11, "b"), "draw": .init(2, "d"), "undo": .init(6, "z"),
+        ])
         NSApp.appearance = NSAppearance(named: .darkAqua)
         NSApp.mainMenu = menu()
         Lang.shared.follow()
