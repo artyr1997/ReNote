@@ -252,7 +252,7 @@ final class SpacePage: Page {
 
         if wide {
             let x = W * 0.28125 - 181.5
-            let top = H * Spacing.y + 1
+            let top = Spacing.innerTop(H)
             shape.frame = NSRect(x: x, y: top, width: 398, height: 320)
             search.alignment = .center
             let left = NSRect(x: x, y: top + 264 + 24, width: 398, height: max(0, H - top * 2 - 264 - 24))

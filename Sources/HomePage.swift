@@ -72,7 +72,7 @@ final class HomePage: Page {
         place(expr, .bottomRight)
 
         // the spaces between the side buttons, in the middle
-        let side = wide ? W * Spacing.x + 64 : 24
+        let side = wide ? Spacing.inner(W) : 24
         let area = NSRect(x: side, y: 64, width: max(0, W - 2 * side), height: max(0, H - 64 - 44))
         let s = wide ? min(0.13 * W, 0.3 * H) : min(0.17 * W, 0.34 * H)
         let gap = 0.04 * W

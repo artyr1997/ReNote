@@ -201,8 +201,8 @@ final class EditPage: Page {
         if wide {
             // the page at most 1280 wide, in the middle
             let pageW = min(W, 1280), pageX = (W - pageW) / 2
-            let x = pageX + pageW * Spacing.x + 56
-            block = NSRect(x: x, y: 0, width: max(0, pageW - 2 * (pageW * Spacing.x + 56)), height: H)
+            let x = pageX + Spacing.inner(pageW)
+            block = NSRect(x: x, y: 0, width: max(0, pageW - 2 * Spacing.inner(pageW)), height: H)
             title.frame = NSRect(x: block.minX + 40, y: 30, width: block.width - 80, height: 32)
             bodyScroll.frame = NSRect(x: block.minX + 40, y: 78, width: block.width - 80, height: max(0, H - 78 - 86))
             arrowSize = 32
