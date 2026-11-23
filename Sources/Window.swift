@@ -229,8 +229,8 @@ final class Host: Flipped {
         b.top = c == .topLeft || c == .topRight
         let h = b.intrinsicContentSize.height
         let left = c == .topLeft || c == .bottomLeft
-        let x = left ? W * 0.0625 - 28 : W - (W * 0.0625 - 28) - SideButton.width
-        let y = b.top ? H * 0.0625 + 8 : H - H * 0.0625 - h
+        let x = left ? W * Spacing.x - 28 : W - (W * Spacing.x - 28) - SideButton.width
+        let y = b.top ? H * Spacing.y + 8 : H - H * Spacing.y - h
         b.frame = NSRect(x: x, y: y, width: SideButton.width, height: h)
     }
 
