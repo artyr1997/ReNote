@@ -90,10 +90,16 @@ final class HomePage: Page {
         search.frame = NSRect(x: (W - width) / 2, y: top, width: width, height: 32)
         blur.frame = bounds
         let h = results.height(width: width)
-        results.frame = NSRect(x: (W - width) / 2, y: top + 32 + 16, width: width, height: h)
+        results.frame = NSRect(x: (W - width) / 2 - Results.margin, y: top + 32 + 16 - Results.margin, width: width + Results.margin * 2, height: h)
     }
 
     // ── search ──
+
+    /// --render: the search with these words in it, its results shown
+    func searchForRender(_ words: String) {
+        search.stringValue = words
+        find()
+    }
 
     private func find() {
         let q = search.stringValue.trimmingCharacters(in: .whitespaces).lowercased()
@@ -269,10 +275,46 @@ final class SpaceTile: Flipped {
     }
 }
 
-/// the notes found: each its space's shape and its title, the chosen one's shape filled
+/// draws the results' rows over their glass
+final class RowsInk: Flipped {
+    weak var results: Results?
+    override func draw(_ dirtyRect: NSRect) { results?.drawInk() }
+    override func hitTest(_ point: NSPoint) -> NSView? { nil }
+}
+
+/// the notes found, on the popups' glass (no frame round it: a + at each corner): each its space's shape and its
+/// title, the chosen one's shape filled and its title underlined
 final class Results: Flipped {
-    var rows: [(element: String, title: String)] = [] { didSet { needsDisplay = true; updateTrackingAreas() } }
-    var chosen = 0 { didSet { needsDisplay = true } }
+    /// room round the pane for the corners' + (their arms reach past it)
+    static let margin: CGFloat = 8
+    private let glass = veil()
+    /// over the glass: the rows and the +, drawn there (the glass, a subview, would cover what this view draws)
+    private let ink = RowsInk()
+
+    override init(frame: NSRect) {
+        super.init(frame: frame)
+        wantsLayer = true
+        glass.alphaValue = 0.9
+        addSubview(glass)
+        ink.results = self
+        addSubview(ink)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func layout() {
+        super.layout()
+        glass.frame = bounds.insetBy(dx: Self.margin, dy: Self.margin)
+        ink.frame = bounds
+    }
+
+    private func redraw() {
+        needsDisplay = true
+        ink.needsDisplay = true
+    }
+
+    var rows: [(element: String, title: String)] = [] { didSet { redraw(); updateTrackingAreas() } }
+    var chosen = 0 { didSet { redraw() } }
     var open: ((Int) -> Void)?
     var hover: ((Int) -> Void)?
 
@@ -282,19 +324,37 @@ final class Results: Flipped {
 
     func height(width: CGFloat) -> CGFloat {
         let n = CGFloat(max(1, rows.count))
-        return pad.height * 2 + n * rowH + (n - 1) * gap
+        return pad.height * 2 + n * rowH + (n - 1) * gap + Self.margin * 2
     }
 
     override func draw(_ dirtyRect: NSRect) {
-        Ink.paper.setFill()
-        bounds.fill()
-        let frame = NSBezierPath(rect: bounds.insetBy(dx: 1, dy: 1))
-        frame.lineWidth = 2
-        Ink.line.setStroke()
-        frame.stroke()
+        Ink.pane.setFill()
+        bounds.insetBy(dx: Self.margin, dy: Self.margin).fill()
+    }
+
+    /// the rows and the corners' +, over the glass
+    func drawInk() {
+        let pane = bounds.insetBy(dx: Self.margin, dy: Self.margin)
+        // a + at each corner, as the popups
+        let marks = NSBezierPath()
+        let arm = CornerMarks.arm
+        for p in [NSPoint(x: pane.minX, y: pane.minY), NSPoint(x: pane.maxX, y: pane.minY),
+                  NSPoint(x: pane.minX, y: pane.maxY), NSPoint(x: pane.maxX, y: pane.maxY)] {
+            let x = p.x.rounded() + 0.25, y = p.y.rounded() - 0.25
+            marks.move(to: NSPoint(x: x - arm, y: y)); marks.line(to: NSPoint(x: x + arm, y: y))
+            marks.move(to: NSPoint(x: x, y: y - arm)); marks.line(to: NSPoint(x: x, y: y + arm))
+        }
+        marks.lineWidth = 1.5
+        NSColor(white: 1, alpha: 0.5).setStroke()
+        marks.stroke()
+        NSGraphicsContext.current?.saveGraphicsState()
+        defer { NSGraphicsContext.current?.restoreGraphicsState() }
+        let shift = NSAffineTransform()
+        shift.translateX(by: Self.margin, yBy: Self.margin)
+        shift.concat()
         if rows.isEmpty {
             let s = attributed("Nothing found.", Fonts.words(16), Ink.line.withAlphaComponent(0.5 * 0.4))
-            s.draw(at: NSPoint(x: (bounds.width - s.size().width) / 2, y: pad.height))
+            s.draw(at: NSPoint(x: (pane.width - s.size().width) / 2, y: pad.height))
             return
         }
         for (i, row) in rows.enumerated() {
@@ -302,14 +362,17 @@ final class Results: Flipped {
             let alpha: CGFloat = i == chosen ? 1 : 0.8
             let color = Ink.line.withAlphaComponent(0.5 * alpha)
             Shape.draw(row.element, in: NSRect(x: pad.width, y: y + 3, width: 14, height: 14), stroke: 1.5, filled: i == chosen, color: color)
-            let s = attributed(row.title, Fonts.words(16), color, align: .left)
-            s.draw(with: NSRect(x: pad.width + 14 + 12, y: y, width: bounds.width - pad.width * 2 - 26, height: rowH),
+            let s = NSMutableAttributedString(attributedString: attributed(row.title, Fonts.words(16), color, align: .left))
+            if i == chosen {
+                s.addAttributes([.underlineStyle: NSUnderlineStyle.single.rawValue, .underlineColor: color], range: NSRange(location: 0, length: s.length))
+            }
+            s.draw(with: NSRect(x: pad.width + 14 + 12, y: y, width: pane.width - pad.width * 2 - 26, height: rowH),
                    options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine])
         }
     }
 
     private func row(at point: NSPoint) -> Int? {
-        let i = Int((point.y - pad.height + gap / 2) / (rowH + gap))
+        let i = Int((point.y - Self.margin - pad.height + gap / 2) / (rowH + gap))
         return i >= 0 && i < rows.count ? i : nil
     }
 

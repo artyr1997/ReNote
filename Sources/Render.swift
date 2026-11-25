@@ -24,6 +24,11 @@ enum Render {
                 let w = NoteWindow(frame: NSRect(origin: .zero, size: size))
                 w.host.go(route)
                 shoot(w, "\(dir)/\(name)-\(sizeName).png")
+                if name == "home" && sizeName == "wide", let home = w.root.allSubviews.compactMap({ $0 as? HomePage }).first {
+                    home.searchForRender("o")
+                    shoot(w, "\(dir)/search-\(sizeName).png")
+                    home.searchForRender("")
+                }
                 if name == "home" && sizeName == "wide" {
                     w.host.showInfo()
                     shoot(w, "\(dir)/info-\(sizeName).png")
