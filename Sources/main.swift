@@ -8,7 +8,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Spacing.start()
         // keys of one's own, as set in ReDesk's keys popup (⌘/)
         OwnKeys.start(app: "ReNote", standard: [
-            "newWindow": .init(45, "n"), "save": .init(1, "s"), "highlight": .init(11, "b"), "draw": .init(2, "d"), "undo": .init(6, "z"),
+            "newWindow": .init(45, "n"), "up": .init(126, "\u{F700}", []), "down": .init(125, "\u{F701}", []),
+            "left": .init(123, "\u{F702}", []), "right": .init(124, "\u{F703}", []), "newNote": .init(45, "n", []),
+            "edit": .init(14, "e", []), "enter": .init(36, "\r", []), "search": .init(44, "/", []),
+            "find": .init(3, "f"), "delete": .init(51, "\u{7F}", []), "esc": .init(53, "\u{1B}", []),
+            "save": .init(1, "s"), "highlight": .init(11, "b"), "draw": .init(2, "d"),
+            "undo": .init(6, "z"), "redo": .init(6, "z", [.command, .shift]), "redoY": .init(16, "y", .control),
         ])
         NSApp.appearance = NSAppearance(named: .darkAqua)
         NSApp.mainMenu = menu()
